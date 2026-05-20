@@ -66,7 +66,7 @@ export function AuthInput({ label, type = "text", placeholder, value, onChange }
   );
 }
 
-export function AuthButton({ children, onClick, disabled }) {
+export function AuthButton({ children, onClick, disabled = false }) {
   return (
     <button
       onClick={onClick}
