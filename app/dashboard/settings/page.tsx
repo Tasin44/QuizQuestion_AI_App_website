@@ -1,18 +1,17 @@
 "use client";
 import { useState } from "react";
-import Footer from "../_components/sections/Footer";
 
 const aiModels = [
-  { id: "gpt-4o", name: "GPT-4o", badge: "Default", badgeColor: "#22c55e", desc: "Best for complex reasoning & long answers", icon: "🤖" },
-  { id: "gemini", name: "Gemini Pro", badge: "Smart", badgeColor: "#4285f4", desc: "Excellent for math, code, and multimodal tasks", icon: "💎" },
-  { id: "claude", name: "Claude 3.5", badge: "Reliable", badgeColor: "#f59e0b", desc: "Great for writing, analysis & nuanced content", icon: "⚡" },
+  { id: "gpt-4o", name: "GPT-4o", badge: "OpenAI", badgeColor: "#22c55e", desc: "Best for complex reasoning & long answers", icon: "🤖" },
+  { id: "gemini", name: "Gemini Pro", badge: "Google", badgeColor: "#4285f4", desc: "Excellent for math, code, and multimodal tasks", icon: "💎" },
+  { id: "claude", name: "Claude 3.5", badge: "Anthropic", badgeColor: "#f59e0b", desc: "Great for writing, analysis & nuanced content", icon: "⚡" },
 ];
 
 const responseStyles = [
-  { id: "concise", name: "Concise", desc: "Straight to the point", icon: "⚡" },
+  { id: "concise", name: "Concise", desc: "Short & to the point", icon: "⚡" },
   { id: "balanced", name: "Balanced", desc: "Clear with context", icon: "⚖️" },
-  { id: "detailed", name: "Detailed", desc: "Full explanations", icon: "📖" },
-  { id: "formal", name: "Formal", desc: "Academic style", icon: "🎓" },
+  { id: "detailed", name: "Detailed", desc: "Full explanation", icon: "📖" },
+  { id: "formal", name: "Formal", desc: "Academic tone", icon: "🎓" },
 ];
 
 const subjects = [
@@ -26,6 +25,55 @@ const subjects = [
   { id: "economics", name: "Economics", icon: "📊" },
 ];
 
+const cardStyle = {
+  backgroundColor: "#111118",
+  border: "1px solid rgba(255,255,255,0.05)",
+  borderRadius: "16px",
+  padding: "24px 28px",
+  width: "100%",
+  boxSizing: "border-box",
+};
+
+const inputStyle = {
+  width: "100%",
+  padding: "11px 14px",
+  backgroundColor: "#0A0A0F",
+  border: "1px solid rgba(255,255,255,0.08)",
+  borderRadius: "10px",
+  color: "#ffffff",
+  fontSize: "13px",
+  outline: "none",
+  boxSizing: "border-box",
+};
+
+const labelStyle = {
+  color: "rgba(255,255,255,0.55)",
+  fontSize: "12px",
+  fontWeight: 500,
+  marginBottom: "6px",
+  display: "block",
+};
+
+function Toggle({ active, onClick }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        width: "40px", height: "22px", borderRadius: "11px",
+        backgroundColor: active ? "#22c55e" : "rgba(255,255,255,0.15)",
+        cursor: "pointer", position: "relative", transition: "all 0.2s ease",
+        flexShrink: 0,
+      }}
+    >
+      <div style={{
+        width: "16px", height: "16px", borderRadius: "50%",
+        backgroundColor: "#fff", position: "absolute", top: "3px",
+        left: active ? "21px" : "3px", transition: "all 0.2s ease",
+      }} />
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const [selectedModel, setSelectedModel] = useState("gpt-4o");
   const [responseStyle, setResponseStyle] = useState("balanced");
@@ -35,7 +83,7 @@ export default function SettingsPage() {
   const [email, setEmail] = useState("");
   const [chatHistoryExport, setChatHistoryExport] = useState(true);
 
-  const toggleSubject = (id: string) => {
+  const toggleSubject = (id) => {
     setSelectedSubjects((prev) =>
       prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
     );
@@ -48,358 +96,278 @@ export default function SettingsPage() {
     return "Expert";
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "12px 14px",
-    backgroundColor: "#16161f",
-    border: "1px solid rgba(255,255,255,0.09)",
-    borderRadius: "10px",
-    color: "#ffffff",
-    fontSize: "14px",
-    outline: "none",
-  };
-
   return (
-    <div style={{ padding: "32px 40px", maxWidth: "1100px" }}>
-      {/* Logo */}
-      <div style={{ marginBottom: "24px" }}>
-        <img src="/images/ai-logo.png" alt="Quiz Question AI" style={{ height: "38px", objectFit: "contain" }} />
-      </div>
+    <div style={{ backgroundColor: "#0A0A0F", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
 
-      <div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: "40px", alignItems: "flex-start" }}>
-        {/* ===== LEFT COLUMN ===== */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
-          {/* Profile Settings */}
-          <div>
-            <h2 style={{ color: "#ffffff", fontSize: "20px", fontWeight: 700, margin: "0 0 20px" }}>Profile Settings</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              <div>
-                <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", marginBottom: "6px", display: "block" }}>Name</label>
-                <input type="text" placeholder="Name" style={inputStyle} />
-              </div>
-              <div>
-                <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", marginBottom: "6px", display: "block" }}>Email</label>
-                <input type="email" placeholder="example@gmail.com" style={inputStyle} />
-              </div>
-            </div>
-          </div>
+      {/* Page Body */}
+      <div style={{ flex: 1, padding: "32px 36px" }}>
 
-          {/* Change Password */}
-          <div>
-            <h2 style={{ color: "#ffffff", fontSize: "20px", fontWeight: 700, margin: "0 0 20px" }}>Change Password</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              <div>
-                <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", marginBottom: "6px", display: "block" }}>Current Password</label>
-                <div style={{ position: "relative" }}>
-                  <input type="password" placeholder="Password" style={inputStyle} />
-                  <span style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.3)", cursor: "pointer" }}>👁</span>
-                </div>
-              </div>
-              <div>
-                <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", marginBottom: "6px", display: "block" }}>Password</label>
-                <div style={{ position: "relative" }}>
-                  <input type="password" placeholder="Password" style={inputStyle} />
-                  <span style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.3)", cursor: "pointer" }}>👁</span>
-                </div>
-              </div>
-              <div>
-                <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", marginBottom: "6px", display: "block" }}>Confirm Password</label>
-                <div style={{ position: "relative" }}>
-                  <input type="password" placeholder="Confirm Password" style={inputStyle} />
-                  <span style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.3)", cursor: "pointer" }}>👁</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Logo */}
+        <div style={{ marginBottom: "28px" }}>
+          <img src="/images/ai-logo.png" alt="Quiz Question AI" style={{ height: "36px", objectFit: "contain" }} />
         </div>
 
-        {/* ===== RIGHT COLUMN ===== */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
-          {/* AI Personalization */}
-          <div>
-            <h2 style={{ color: "#ffffff", fontSize: "20px", fontWeight: 700, margin: "0 0 20px" }}>AI Personalization</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {aiModels.map((m) => {
-                const isActive = m.id === selectedModel;
-                return (
-                  <div
-                    key={m.id}
-                    onClick={() => setSelectedModel(m.id)}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "14px",
-                      padding: "16px 18px",
-                      backgroundColor: isActive ? "rgba(79,70,229,0.08)" : "#111118",
-                      border: isActive ? "1px solid rgba(79,70,229,0.3)" : "1px solid rgba(255,255,255,0.06)",
-                      borderRadius: "12px",
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                    }}
-                  >
-                    <span style={{ fontSize: "22px" }}>{m.icon}</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>{m.name}</span>
-                        <span style={{ padding: "2px 8px", borderRadius: "10px", backgroundColor: `${m.badgeColor}20`, color: m.badgeColor, fontSize: "10px", fontWeight: 600 }}>{m.badge}</span>
+        {/* 2 Column Grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "360px 1fr", gap: "24px", alignItems: "flex-start" }}>
+
+          {/* ===== LEFT ===== */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+
+            {/* Profile Settings */}
+            <div style={cardStyle}>
+              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 18px" }}>Profile Settings</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                <div>
+                  <label style={labelStyle}>Name</label>
+                  <input type="text" placeholder="Name" style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Email</label>
+                  <input type="email" placeholder="example@gmail.com" style={inputStyle} />
+                </div>
+              </div>
+            </div>
+
+            {/* Change Password */}
+            <div style={cardStyle}>
+              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 18px" }}>Change Password</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                {[
+                  { label: "Current Password", placeholder: "Password" },
+                  { label: "Password", placeholder: "Password" },
+                  { label: "Confirm Password", placeholder: "Confirm Password" },
+                ].map((field) => (
+                  <div key={field.label}>
+                    <label style={labelStyle}>{field.label}</label>
+                    <div style={{ position: "relative" }}>
+                      <input type="password" placeholder={field.placeholder} style={inputStyle} />
+                      <span style={{
+                        position: "absolute", right: "12px", top: "50%",
+                        transform: "translateY(-50%)", color: "rgba(255,255,255,0.3)",
+                        cursor: "pointer", fontSize: "13px",
+                      }}>👁</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+
+          {/* ===== RIGHT ===== */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+
+            {/* AI Personalization */}
+            <div style={cardStyle}>
+              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 18px" }}>AI Personalization</h2>
+
+              {/* Models */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
+                {aiModels.map((m) => {
+                  const isActive = m.id === selectedModel;
+                  return (
+                    <div
+                      key={m.id}
+                      onClick={() => setSelectedModel(m.id)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: "12px",
+                        padding: "12px 16px",
+                        backgroundColor: isActive ? "rgba(79,70,229,0.07)" : "rgba(255,255,255,0.02)",
+                        border: isActive ? "1px solid rgba(79,70,229,0.35)" : "1px solid rgba(255,255,255,0.04)",
+                        borderRadius: "12px", cursor: "pointer", transition: "all 0.2s ease",
+                      }}
+                    >
+                      <span style={{ fontSize: "18px" }}>{m.icon}</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+                          <span style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{m.name}</span>
+                          <span style={{
+                            padding: "1px 7px", borderRadius: "10px",
+                            backgroundColor: `${m.badgeColor}20`, color: m.badgeColor,
+                            fontSize: "10px", fontWeight: 600,
+                          }}>{m.badge}</span>
+                        </div>
+                        <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "11px", margin: "2px 0 0" }}>{m.desc}</p>
                       </div>
-                      <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "12px", margin: "2px 0 0" }}>{m.desc}</p>
+                      <div style={{
+                        width: "18px", height: "18px", borderRadius: "50%",
+                        border: `2px solid ${isActive ? "#22c55e" : "rgba(255,255,255,0.15)"}`,
+                        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                      }}>
+                        {isActive && <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#22c55e" }} />}
+                      </div>
                     </div>
-                    {/* Radio */}
-                    <div style={{ width: "20px", height: "20px", borderRadius: "50%", border: `2px solid ${isActive ? "#4F46E5" : "rgba(255,255,255,0.15)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      {isActive && <div style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: "#4F46E5" }} />}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+                  );
+                })}
+              </div>
 
-          {/* Response Style */}
-          <div>
-            <h2 style={{ color: "#ffffff", fontSize: "18px", fontWeight: 700, margin: "0 0 16px" }}>Response Style</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-              {responseStyles.map((rs) => {
-                const isActive = rs.id === responseStyle;
-                return (
-                  <div
-                    key={rs.id}
-                    onClick={() => setResponseStyle(rs.id)}
-                    style={{
-                      padding: "14px 16px",
-                      backgroundColor: isActive ? "rgba(79,70,229,0.12)" : "#111118",
-                      border: isActive ? "1px solid rgba(79,70,229,0.4)" : "1px solid rgba(255,255,255,0.06)",
-                      borderRadius: "10px",
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span>{rs.icon}</span>
-                      <span style={{ color: isActive ? "#fff" : "rgba(255,255,255,0.7)", fontSize: "13px", fontWeight: 600 }}>{rs.name}</span>
-                    </div>
-                    <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "11px", margin: "4px 0 0 0", paddingLeft: "26px" }}>{rs.desc}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+              {/* Response Style */}
+              <div style={{ marginBottom: "20px" }}>
+                <h3 style={{ color: "rgba(255,255,255,0.6)", fontSize: "12px", fontWeight: 600, margin: "0 0 10px" }}>Response Style</h3>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                  {responseStyles.map((rs) => {
+                    const isActive = rs.id === responseStyle;
+                    return (
+                      <div
+                        key={rs.id}
+                        onClick={() => setResponseStyle(rs.id)}
+                        style={{
+                          padding: "11px 13px",
+                          backgroundColor: isActive ? "rgba(79,70,229,0.1)" : "rgba(255,255,255,0.02)",
+                          border: isActive ? "1px solid rgba(79,70,229,0.3)" : "1px solid rgba(255,255,255,0.04)",
+                          borderRadius: "10px", cursor: "pointer", transition: "all 0.2s ease",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+                          <span style={{ fontSize: "13px" }}>{rs.icon}</span>
+                          <span style={{ color: isActive ? "#fff" : "rgba(255,255,255,0.55)", fontSize: "12px", fontWeight: 600 }}>{rs.name}</span>
+                        </div>
+                        <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "10px", margin: "2px 0 0", paddingLeft: "20px" }}>{rs.desc}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
 
-          {/* Difficulty Level */}
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
-              <h2 style={{ color: "#ffffff", fontSize: "18px", fontWeight: 700, margin: 0 }}>Difficulty Level</h2>
-              <span style={{ color: "#7b68ee", fontSize: "13px", fontWeight: 600 }}>{getDiffLabel()}</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={difficulty}
-              onChange={(e) => setDifficulty(Number(e.target.value))}
-              style={{ width: "100%", accentColor: "#4F46E5", height: "6px" }}
-            />
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "6px" }}>
-              {["Beginner", "Intermediate", "Advanced", "Expert"].map((l) => (
-                <span key={l} style={{ color: "rgba(255,255,255,0.3)", fontSize: "11px" }}>{l}</span>
-              ))}
-            </div>
-          </div>
+              {/* Difficulty */}
+              <div style={{ marginBottom: "20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <h3 style={{ color: "rgba(255,255,255,0.6)", fontSize: "12px", fontWeight: 600, margin: 0 }}>Difficulty Level</h3>
+                  <span style={{ color: "#7b68ee", fontSize: "11px", fontWeight: 600 }}>{getDiffLabel()}</span>
+                </div>
+                <input
+                  type="range" min="0" max="100" value={difficulty}
+                  onChange={(e) => setDifficulty(Number(e.target.value))}
+                  style={{ width: "100%", accentColor: "#4F46E5", cursor: "pointer" }}
+                />
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px" }}>
+                  {["Beginner", "Intermediate", "Advanced", "Expert"].map((l) => (
+                    <span key={l} style={{ color: "rgba(255,255,255,0.22)", fontSize: "10px" }}>{l}</span>
+                  ))}
+                </div>
+              </div>
 
-          {/* Subject Focus Area */}
-          <div>
-            <h2 style={{ color: "#ffffff", fontSize: "18px", fontWeight: 700, margin: "0 0 16px" }}>Subject Focus Area</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
-              {subjects.map((s) => {
-                const isSelected = selectedSubjects.includes(s.id);
-                return (
-                  <div
-                    key={s.id}
-                    onClick={() => toggleSubject(s.id)}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      padding: "10px 14px",
-                      borderRadius: "22px",
-                      backgroundColor: isSelected ? "rgba(79,70,229,0.15)" : "rgba(255,255,255,0.04)",
-                      border: isSelected ? "1px solid rgba(79,70,229,0.4)" : "1px solid rgba(255,255,255,0.06)",
-                      color: isSelected ? "#ffffff" : "rgba(255,255,255,0.5)",
-                      fontSize: "13px",
-                      fontWeight: 500,
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                    }}
-                  >
-                    <span>{s.icon}</span>
-                    {s.name}
-                    {isSelected && <span style={{ marginLeft: "auto", fontSize: "12px" }}>✓</span>}
-                  </div>
-                );
-              })}
-            </div>
+              {/* Subject Focus */}
+              <div style={{ marginBottom: "22px" }}>
+                <h3 style={{ color: "rgba(255,255,255,0.6)", fontSize: "12px", fontWeight: 600, margin: "0 0 10px" }}>Subject Focus Area</h3>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                  {subjects.map((s) => {
+                    const isSelected = selectedSubjects.includes(s.id);
+                    return (
+                      <div
+                        key={s.id}
+                        onClick={() => toggleSubject(s.id)}
+                        style={{
+                          display: "flex", alignItems: "center", gap: "5px",
+                          padding: "6px 12px", borderRadius: "20px",
+                          backgroundColor: isSelected ? "rgba(79,70,229,0.12)" : "rgba(255,255,255,0.02)",
+                          border: isSelected ? "1px solid rgba(79,70,229,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                          color: isSelected ? "#fff" : "rgba(255,255,255,0.45)",
+                          fontSize: "12px", fontWeight: 500, cursor: "pointer", transition: "all 0.2s ease",
+                        }}
+                      >
+                        <span>{s.icon}</span>
+                        <span>{s.name}</span>
+                        {isSelected && <span style={{ fontSize: "10px", color: "#7b68ee" }}>✓</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
 
-            {/* Save Preferences */}
-            <button
-              style={{
-                width: "100%",
-                padding: "14px",
-                marginTop: "20px",
+              <button style={{
+                width: "100%", padding: "13px",
                 background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
-                border: "none",
-                borderRadius: "12px",
-                color: "#fff",
-                fontSize: "15px",
-                fontWeight: 600,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                transition: "all 0.2s ease",
-              }}
-            >
-              ✨ Save Preferences
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ===== PARENTAL CONTROL ===== */}
-      <div style={{ marginTop: "48px", maxWidth: "700px" }}>
-        <h2 style={{ color: "#ffffff", fontSize: "22px", fontWeight: 700, margin: "0 0 24px" }}>Parental Control</h2>
-
-        {/* Parent toggle */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px", backgroundColor: "#111118", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", marginBottom: "10px" }}>
-          <div>
-            <p style={{ color: "#fff", fontSize: "15px", fontWeight: 600, margin: 0 }}>Parent</p>
-            <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "12px", margin: "2px 0 0" }}>Add managing abilities as parent</p>
-          </div>
-          <div
-            onClick={() => setParentalRole("parent")}
-            style={{
-              width: "44px", height: "24px", borderRadius: "12px",
-              backgroundColor: parentalRole === "parent" ? "#22c55e" : "rgba(255,255,255,0.15)",
-              cursor: "pointer", position: "relative", transition: "all 0.2s ease",
-            }}
-          >
-            <div style={{ width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#fff", position: "absolute", top: "3px", left: parentalRole === "parent" ? "23px" : "3px", transition: "all 0.2s ease" }} />
-          </div>
-        </div>
-
-        {/* Child toggle */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px", backgroundColor: "#111118", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", marginBottom: "20px" }}>
-          <div>
-            <p style={{ color: "#fff", fontSize: "15px", fontWeight: 600, margin: 0 }}>Child</p>
-            <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "12px", margin: "2px 0 0" }}>Add Your Child</p>
-          </div>
-          <div
-            onClick={() => setParentalRole("child")}
-            style={{
-              width: "44px", height: "24px", borderRadius: "12px",
-              backgroundColor: parentalRole === "child" ? "#22c55e" : "rgba(255,255,255,0.15)",
-              cursor: "pointer", position: "relative", transition: "all 0.2s ease",
-            }}
-          >
-            <div style={{ width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#fff", position: "absolute", top: "3px", left: parentalRole === "child" ? "23px" : "3px", transition: "all 0.2s ease" }} />
-          </div>
-        </div>
-
-        {/* Enter Email */}
-        <div style={{ marginBottom: "16px" }}>
-          <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px", fontWeight: 600, display: "block", marginBottom: "8px" }}>Enter Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="example@gmail.com"
-            style={{ ...inputStyle }}
-          />
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-          <button
-            style={{
-              padding: "14px",
-              backgroundColor: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "12px",
-              color: "#ffffff",
-              fontSize: "14px",
-              fontWeight: 600,
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
-          >
-            See Child&apos;s Activity
-          </button>
-          <button
-            style={{
-              padding: "14px",
-              background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
-              border: "none",
-              borderRadius: "12px",
-              color: "#ffffff",
-              fontSize: "14px",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            Send Invite
-          </button>
-        </div>
-      </div>
-
-      {/* ===== EXPLORE YOUR DATA ===== */}
-      <div style={{ marginTop: "48px", maxWidth: "700px", marginBottom: "40px" }}>
-        <h2 style={{ color: "#ffffff", fontSize: "18px", fontWeight: 700, margin: "0 0 16px" }}>Explore your Data</h2>
-
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", backgroundColor: "#111118", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", marginBottom: "8px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-            <div>
-              <span style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>Chat History</span>
-              <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "11px", marginLeft: "8px" }}>156 conversations · 2.6 MB</span>
+                border: "none", borderRadius: "10px", color: "#fff",
+                fontSize: "13px", fontWeight: 600, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+              }}>
+                ✨ Save Preferences
+              </button>
             </div>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "11px" }}>~1.2 MB</span>
-            <div
-              onClick={() => setChatHistoryExport(!chatHistoryExport)}
-              style={{
-                width: "44px", height: "24px", borderRadius: "12px",
-                backgroundColor: chatHistoryExport ? "#22c55e" : "rgba(255,255,255,0.15)",
-                cursor: "pointer", position: "relative", transition: "all 0.2s ease",
-              }}
-            >
-              <div style={{ width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#fff", position: "absolute", top: "3px", left: chatHistoryExport ? "23px" : "3px", transition: "all 0.2s ease" }} />
+
+            {/* Parental Control */}
+            <div style={cardStyle}>
+              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 16px" }}>Parental Control</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "16px" }}>
+                {[
+                  { id: "parent", title: "Parent", desc: "Add managing abilities as parent" },
+                  { id: "child", title: "Child", desc: "Add Your Child" },
+                ].map((item) => (
+                  <div key={item.id} style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "13px 16px",
+                    backgroundColor: parentalRole === item.id ? "rgba(79,70,229,0.06)" : "rgba(255,255,255,0.02)",
+                    border: parentalRole === item.id ? "1px solid rgba(79,70,229,0.2)" : "1px solid rgba(255,255,255,0.04)",
+                    borderRadius: "12px",
+                  }}>
+                    <div>
+                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, margin: 0 }}>{item.title}</p>
+                      <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "11px", margin: "2px 0 0" }}>{item.desc}</p>
+                    </div>
+                    <Toggle active={parentalRole === item.id} onClick={() => setParentalRole(item.id)} />
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={labelStyle}>Enter Email</label>
+                <input
+                  type="email" value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="example@gmail.com" style={inputStyle}
+                />
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <button style={{
+                  padding: "11px", backgroundColor: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px",
+                  color: "#fff", fontSize: "12px", fontWeight: 600, cursor: "pointer",
+                }}>See Child&apos;s Activity</button>
+                <button style={{
+                  padding: "11px",
+                  background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
+                  border: "none", borderRadius: "10px", color: "#fff",
+                  fontSize: "12px", fontWeight: 600, cursor: "pointer",
+                }}>Send Invite</button>
+              </div>
             </div>
+
+            {/* Explore Your Data */}
+            <div style={cardStyle}>
+              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 16px" }}>Explore your Data</h2>
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "13px 16px", backgroundColor: "rgba(255,255,255,0.02)",
+                border: "1px solid rgba(255,255,255,0.04)", borderRadius: "12px", marginBottom: "14px",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.8">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  <div>
+                    <span style={{ color: "#fff", fontSize: "13px", fontWeight: 500 }}>Chat History</span>
+                    <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "11px", marginLeft: "8px" }}>156 conversations · 2.6 MB</span>
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "11px" }}>~1.2 MB</span>
+                  <Toggle active={chatHistoryExport} onClick={() => setChatHistoryExport(!chatHistoryExport)} />
+                </div>
+              </div>
+              <button style={{
+                width: "100%", padding: "13px",
+                background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
+                border: "none", borderRadius: "10px", color: "#fff",
+                fontSize: "13px", fontWeight: 600, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+              }}>⬇ Export Selected Data</button>
+            </div>
+
           </div>
         </div>
-
-        <button
-          style={{
-            width: "100%",
-            padding: "14px",
-            marginTop: "12px",
-            background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
-            border: "none",
-            borderRadius: "12px",
-            color: "#fff",
-            fontSize: "15px",
-            fontWeight: 600,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-          }}
-        >
-          ⬇ Export Selected Data
-        </button>
       </div>
 
-      <Footer />
+       
     </div>
   );
 }

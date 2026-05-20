@@ -7,7 +7,6 @@ import SubjectsSection from "./_components/sections/SubjectsSection";
 import RevolutionSection from "./_components/sections/RevolutionSection";
 import PricingSection from "./_components/sections/PricingSection";
 import DevicesSection from "./_components/sections/DevicesSection";
-import Footer from "./_components/sections/Footer";
 import ModelSelector from "./_components/ModelSelector";
 
 const subjectPills = ["Math", "Physics", "Chemistry", "Biology", "Statistics"];
@@ -194,7 +193,6 @@ export default function DashboardPage() {
       <PricingSection />
       <div style={{ height: "1px", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent)", maxWidth: "800px", margin: "0 auto" }} />
       <DevicesSection />
-      <Footer />
     </div>
   );
 }

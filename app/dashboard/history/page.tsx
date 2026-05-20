@@ -117,33 +117,6 @@ export default function HistoryPage() {
           </Link>
         ))}
       </div>
-
-      {/* Footer */}
-      <div style={{ marginTop: "60px", paddingTop: "30px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-          <img src="/images/ai-logo.png" alt="Quiz Question AI" style={{ height: "28px", objectFit: "contain" }} />
-        </div>
-        <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "12px", margin: "8px 0 0" }}>
-          AI-powered homework and study platform
-        </p>
-        <div style={{ display: "flex", gap: "24px", marginTop: "16px" }}>
-          <div>
-            <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "12px", fontWeight: 600, margin: "0 0 8px" }}>LEGAL</p>
-            <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "12px", margin: "0 0 4px", cursor: "pointer" }}>Privacy Policy</p>
-            <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "12px", margin: 0, cursor: "pointer" }}>Terms of Service</p>
-          </div>
-          <div>
-            <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "12px", fontWeight: 600, margin: "0 0 8px" }}>DOWNLOAD APP</p>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" style={{ height: "30px" }} />
-              <img src="/images/apple.png" alt="App Store" style={{ height: "30px" }} />
-            </div>
-          </div>
-        </div>
-        <p style={{ color: "rgba(255,255,255,0.2)", fontSize: "11px", marginTop: "24px" }}>
-          © 2026 Quiz Question AI. All rights reserved.
-        </p>
-      </div>
     </div>
   );
 }
