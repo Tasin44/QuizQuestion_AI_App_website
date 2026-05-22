@@ -1,5 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getProfile, updateProfile } from "@/app/(auth)/_lib/api";
+import { getAccessToken } from "@/app/(auth)/_lib/authStorage";
 
 const aiModels = [
   { id: "gpt-4o", name: "GPT-4o", badge: "OpenAI", badgeColor: "#22c55e", desc: "Best for complex reasoning & long answers", icon: "🤖" },
@@ -85,8 +88,59 @@ export default function SettingsPage() {
   const [difficulty, setDifficulty] = useState(50);
   const [selectedSubjects, setSelectedSubjects] = useState(["mathematics", "physics"]);
   const [parentalRole, setParentalRole] = useState("parent");
-  const [email, setEmail] = useState("");
   const [chatHistoryExport, setChatHistoryExport] = useState(true);
+  const [profileName, setProfileName] = useState("");
+  const [profileEmail, setProfileEmail] = useState("");
+  const [profileImageUrl, setProfileImageUrl] = useState("");
+  const [profileDescription, setProfileDescription] = useState("");
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileError, setProfileError] = useState("");
+  const [profileSuccess, setProfileSuccess] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const queryClient = useQueryClient();
+
+  const profileQuery = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => getProfile(getAccessToken()),
+    staleTime: 60_000,
+  });
+
+  useEffect(() => {
+    if (profileQuery.data?.data) {
+      setProfileName(profileQuery.data.data.name || "");
+      setProfileEmail(profileQuery.data.data.email || "");
+      setProfileImageUrl(profileQuery.data.data.image_url || "");
+      setProfileDescription(profileQuery.data.data.description || "");
+    }
+  }, [profileQuery.data]);
+
+  const updateProfileMutation = useMutation({
+    mutationFn: () => updateProfile({
+      name: profileName,
+      image_url: profileImageUrl,
+      description: profileDescription,
+    }, getAccessToken()),
+    onSuccess: (data) => {
+      setProfileName(data.data.name || "");
+      setProfileEmail(data.data.email || "");
+      setProfileImageUrl(data.data.image_url || "");
+      setProfileDescription(data.data.description || "");
+      setProfileSuccess("Profile updated successfully.");
+      setProfileError("");
+      setIsEditingProfile(false);
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+    onError: (err: Error) => {
+      setProfileError(err?.message || "Profile update failed.");
+      setProfileSuccess("");
+    },
+  });
+
+  const handleProfileUpdate = () => {
+    setProfileError("");
+    setProfileSuccess("");
+    updateProfileMutation.mutate();
+  };
 
   const toggleSubject = (id: string) => {
     setSelectedSubjects((prev) =>
@@ -120,16 +174,119 @@ export default function SettingsPage() {
 
             {/* Profile Settings */}
             <div style={cardStyle}>
-              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 18px" }}>Profile Settings</h2>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "18px" }}>
+                <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: 0 }}>Profile Settings</h2>
+                <button
+                  onClick={() => {
+                    setProfileError("");
+                    setProfileSuccess("");
+                    setIsEditingProfile((prev) => !prev);
+                  }}
+                  style={{
+                    padding: "6px 12px",
+                    backgroundColor: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: "8px",
+                    color: "#fff",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  {isEditingProfile ? "Cancel" : "Edit"}
+                </button>
+              </div>
+              <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "14px" }}>
+                <div
+                  style={{
+                    width: "52px",
+                    height: "52px",
+                    borderRadius: "50%",
+                    backgroundColor: "rgba(255,255,255,0.08)",
+                    overflow: "hidden",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "rgba(255,255,255,0.6)",
+                    fontSize: "18px",
+                    fontWeight: 700,
+                  }}
+                >
+                  {profileImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={profileImageUrl} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    (profileName || profileEmail || "U").slice(0, 2).toUpperCase()
+                  )}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={labelStyle}>Profile Image URL</label>
+                  <input
+                    type="text"
+                    placeholder="https://example.com/image.png"
+                    style={inputStyle}
+                    value={profileImageUrl}
+                    onChange={(e) => setProfileImageUrl(e.target.value)}
+                    readOnly={!isEditingProfile}
+                  />
+                </div>
+              </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                 <div>
                   <label style={labelStyle}>Name</label>
-                  <input type="text" placeholder="Name" style={inputStyle} />
+                  <input
+                    type="text"
+                    placeholder="Name"
+                    style={inputStyle}
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    readOnly={!isEditingProfile}
+                  />
                 </div>
                 <div>
                   <label style={labelStyle}>Email</label>
-                  <input type="email" placeholder="example@gmail.com" style={inputStyle} />
+                  <input
+                    type="email"
+                    placeholder="example@gmail.com"
+                    style={inputStyle}
+                    value={profileEmail}
+                    readOnly
+                  />
                 </div>
+                <div>
+                  <label style={labelStyle}>Description</label>
+                  <textarea
+                    placeholder="Write something about yourself"
+                    style={{ ...inputStyle, minHeight: "80px", resize: "vertical" }}
+                    value={profileDescription}
+                    onChange={(e) => setProfileDescription(e.target.value)}
+                    readOnly={!isEditingProfile}
+                  />
+                </div>
+                {profileError && (
+                  <p style={{ color: "#ff6b6b", fontSize: "12px", margin: 0 }}>{profileError}</p>
+                )}
+                {profileSuccess && (
+                  <p style={{ color: "#22c55e", fontSize: "12px", margin: 0 }}>{profileSuccess}</p>
+                )}
+                <button
+                  onClick={handleProfileUpdate}
+                  disabled={!isEditingProfile || updateProfileMutation.isPending}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    background: isEditingProfile ? "linear-gradient(135deg, #6c5ce7, #7b68ee)" : "rgba(255,255,255,0.08)",
+                    border: "none",
+                    borderRadius: "10px",
+                    color: "#fff",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    cursor: isEditingProfile ? "pointer" : "not-allowed",
+                    opacity: updateProfileMutation.isPending ? 0.7 : 1,
+                  }}
+                >
+                  {updateProfileMutation.isPending ? "Updating..." : "Update Profile"}
+                </button>
               </div>
             </div>
 
@@ -317,8 +474,8 @@ export default function SettingsPage() {
               <div style={{ marginBottom: "16px" }}>
                 <label style={labelStyle}>Enter Email</label>
                 <input
-                  type="email" value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="email" value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="example@gmail.com" style={inputStyle}
                 />
               </div>

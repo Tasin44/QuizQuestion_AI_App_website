@@ -1,6 +1,9 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { getProfile } from "@/app/(auth)/_lib/api";
+import { getAccessToken } from "@/app/(auth)/_lib/authStorage";
 
 interface TopNavbarProps {
   onLogout?: () => void;
@@ -10,6 +13,18 @@ export default function TopNavbar({ onLogout }: TopNavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const profileQuery = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => getProfile(getAccessToken()),
+    staleTime: 60_000,
+  });
+
+  const name = profileQuery.data?.data?.name || "";
+  const email = profileQuery.data?.data?.email || "";
+  const imageUrl = profileQuery.data?.data?.image_url || "";
+  const initialsSource = name || email || "U";
+  const initials = initialsSource.trim().slice(0, 2).toUpperCase();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -64,16 +79,22 @@ export default function TopNavbar({ onLogout }: TopNavbarProps) {
               fontWeight: 700,
               color: "#fff",
               flexShrink: 0,
+              overflow: "hidden",
             }}
           >
-            A
+            {imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={imageUrl} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              initials
+            )}
           </div>
           <div>
             <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, margin: 0, lineHeight: 1.3 }}>
-              Angelina jolley
+              {name || "User"}
             </p>
             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "11px", margin: 0 }}>
-              example@gmail.com
+              {email || ""}
             </p>
           </div>
           <span style={{ color: "rgba(255,255,255,0.35)", fontSize: "12px", marginLeft: "4px" }}>

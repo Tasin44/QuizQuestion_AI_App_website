@@ -13,6 +13,18 @@ function setCookie(name: string, value: string, days = 7) {
   document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Max-Age=${maxAge}; Path=/; SameSite=Lax`;
 }
 
+function getCookie(name: string) {
+  const key = `${encodeURIComponent(name)}=`;
+  const cookies = document.cookie.split(";");
+  for (const cookie of cookies) {
+    const trimmed = cookie.trim();
+    if (trimmed.startsWith(key)) {
+      return decodeURIComponent(trimmed.substring(key.length));
+    }
+  }
+  return "";
+}
+
 export function setAuthTokens(tokens: AuthTokens) {
   if (!tokens?.access) return;
   localStorage.setItem(ACCESS_TOKEN_KEY, tokens.access);
@@ -22,6 +34,10 @@ export function setAuthTokens(tokens: AuthTokens) {
     localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refresh);
     setCookie(REFRESH_TOKEN_KEY, tokens.refresh, 14);
   }
+}
+
+export function getAccessToken() {
+  return localStorage.getItem(ACCESS_TOKEN_KEY) || getCookie(ACCESS_TOKEN_KEY) || "";
 }
 
 export function setPendingEmail(email: string) {

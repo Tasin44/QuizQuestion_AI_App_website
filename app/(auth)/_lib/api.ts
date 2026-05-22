@@ -28,6 +28,41 @@ async function request<T>(path: string, body: Record<string, unknown>): Promise<
   return data as T;
 }
 
+async function requestGet<T>(path: string, token?: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
+  const data = await response.json().catch(() => null);
+  if (!response.ok || data?.success === false) {
+    throw new ApiError(data?.message || "Request failed", data?.data || null);
+  }
+
+  return data as T;
+}
+
+async function requestPatch<T>(path: string, body: Record<string, unknown>, token?: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await response.json().catch(() => null);
+  if (!response.ok || data?.success === false) {
+    throw new ApiError(data?.message || "Request failed", data?.data || null);
+  }
+
+  return data as T;
+}
+
 export type AuthTokens = {
   access: string;
   refresh?: string;
@@ -82,6 +117,33 @@ export type ResetPasswordResponse = {
   data?: Record<string, never>;
 };
 
+export type ProfileResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: {
+    id: string;
+    email: string;
+    name: string;
+    image_url: string | null;
+    description: string;
+    problems_solved: number;
+    study_minutes: number;
+    active_days: number;
+    two_factor_enabled: boolean;
+    badges: unknown[];
+    level: number;
+    created_at: string;
+    updated_at: string;
+  };
+};
+
+export type ProfileUpdatePayload = {
+  name?: string;
+  image_url?: string;
+  description?: string;
+};
+
 export function signup(email: string, password: string) {
   return request<SignupResponse>("/auth/signup/", { email, password });
 }
@@ -114,4 +176,12 @@ export function resetPassword(email: string, secretKey: string, newPassword: str
     secret_key: secretKey,
     new_password: newPassword,
   });
+}
+
+export function getProfile(accessToken?: string) {
+  return requestGet<ProfileResponse>("/profile/", accessToken);
+}
+
+export function updateProfile(payload: ProfileUpdatePayload, accessToken?: string) {
+  return requestPatch<ProfileResponse>("/profile/", payload, accessToken);
 }
