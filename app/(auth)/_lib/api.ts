@@ -144,6 +144,18 @@ export type ProfileUpdatePayload = {
   description?: string;
 };
 
+export type ChatAskModel = "gpt" | "claude" | "gemini";
+
+export type ChatAskResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: {
+    role: string;
+    content: string;
+  };
+};
+
 export function signup(email: string, password: string) {
   return request<SignupResponse>("/auth/signup/", { email, password });
 }
@@ -184,4 +196,8 @@ export function getProfile(accessToken?: string) {
 
 export function updateProfile(payload: ProfileUpdatePayload, accessToken?: string) {
   return requestPatch<ProfileResponse>("/profile/", payload, accessToken);
+}
+
+export function askChat(message: string, model: ChatAskModel) {
+  return request<ChatAskResponse>("/chat/ask/", { message, model });
 }

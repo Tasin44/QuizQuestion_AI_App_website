@@ -3,10 +3,39 @@ import { useState, useRef, useEffect } from "react";
 
 const models = [
   {
+    id: "auto",
+    name: "Auto",
+    desc: "Smart",
+    color: "#22c55e",
+    apiModel: "gpt",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <rect width="24" height="24" rx="6" fill="#1a1a28" />
+        <path d="M12 4v6l4 2" stroke="#22c55e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="12" cy="12" r="7" stroke="#22c55e" strokeWidth="1.5" />
+      </svg>
+    ),
+  },
+  {
+    id: "qq-ai",
+    name: "QQ AI",
+    desc: "Quick",
+    color: "#7b68ee",
+    apiModel: "gpt",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <rect width="24" height="24" rx="6" fill="#1a1a28" />
+        <path d="M7 12h10M12 7v10" stroke="#7b68ee" strokeWidth="1.5" strokeLinecap="round" />
+        <circle cx="12" cy="12" r="5" stroke="#7b68ee" strokeWidth="1.5" />
+      </svg>
+    ),
+  },
+  {
     id: "gpt-4o",
     name: "GPT-4o",
     desc: "General",
     color: "#22c55e",
+    apiModel: "gpt",
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
         <rect width="24" height="24" rx="6" fill="#1a1a28" />
@@ -20,6 +49,7 @@ const models = [
     name: "Gemini Pro",
     desc: "Research",
     color: "#4285f4",
+    apiModel: "gemini",
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
         <rect width="24" height="24" rx="6" fill="#1a1a28" />
@@ -28,10 +58,25 @@ const models = [
     ),
   },
   {
-    id: "claude-3",
-    name: "Claude 3",
+    id: "gpt-4o-mini",
+    name: "GPT-4o Mini",
+    desc: "Fast",
+    color: "#38bdf8",
+    apiModel: "gpt",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <rect width="24" height="24" rx="6" fill="#1a1a28" />
+        <path d="M6 14l6-6 6 6" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="12" cy="14" r="3" stroke="#38bdf8" strokeWidth="1.5" />
+      </svg>
+    ),
+  },
+  {
+    id: "claude-6",
+    name: "Claude 6",
     desc: "Math",
     color: "#f59e0b",
+    apiModel: "claude",
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
         <rect width="24" height="24" rx="6" fill="#1a1a28" />
@@ -43,12 +88,20 @@ const models = [
 
 interface ModelSelectorProps {
   size?: "sm" | "md";
+  value?: "gpt" | "claude" | "gemini";
+  onChange?: (value: "gpt" | "claude" | "gemini") => void;
 }
 
-export default function ModelSelector({ size = "sm" }: ModelSelectorProps) {
+export default function ModelSelector({ size = "sm", value, onChange }: ModelSelectorProps) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(models[0]);
   const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!value) return;
+    const next = models.find((m) => m.apiModel === value);
+    if (next) setSelected(next);
+  }, [value]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -124,6 +177,7 @@ export default function ModelSelector({ size = "sm" }: ModelSelectorProps) {
                 onClick={() => {
                   setSelected(m);
                   setOpen(false);
+                  if (onChange) onChange(m.apiModel as "gpt" | "claude" | "gemini");
                 }}
                 style={{
                   display: "flex",

@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { evaluate } from "mathjs";
 import ModelSelector from "../_components/ModelSelector";
+import { useMutation } from "@tanstack/react-query";
+import { askChat, type ChatAskModel } from "@/app/(auth)/_lib/api";
 
 // tabs removed per request
 
@@ -18,6 +20,24 @@ const purpleKeys = ["+", "-", "×", "/"];
 export default function CalculatorPage() {
   const [expression, setExpression] = useState("ax^2 + bx + c = 0");
   const [message, setMessage] = useState("");
+  const [model, setModel] = useState<ChatAskModel>("gpt");
+  const [response, setResponse] = useState("");
+
+  const askMutation = useMutation({
+    mutationFn: () => askChat(message, model),
+    onSuccess: (data) => {
+      setResponse(data.data.content || "");
+    },
+    onError: (err: Error) => {
+      setResponse(err?.message || "Request failed.");
+    },
+  });
+
+  const handleAsk = () => {
+    if (!message.trim()) return;
+    setResponse("");
+    askMutation.mutate();
+  };
 
   const handleKey = (key: string) => {
     if (key === "del") return setExpression("");
@@ -44,7 +64,7 @@ export default function CalculatorPage() {
     <div style={{ padding: "24px 32px", maxWidth: "900px", width: "100%" }}>
       {/* Dynamic Model Selector */}
       <div style={{ marginBottom: "16px" }}>
-        <ModelSelector size="sm" />
+        <ModelSelector size="sm" value={model} onChange={setModel} />
       </div>
 
       {/* Chat Input */}
@@ -69,6 +89,12 @@ export default function CalculatorPage() {
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleAsk();
+            }
+          }}
           placeholder="Type your question or upload an image..."
           style={{
             flex: 1,
@@ -80,13 +106,15 @@ export default function CalculatorPage() {
           }}
         />
         <button
+          onClick={handleAsk}
+          disabled={askMutation.isPending}
           style={{
             width: "34px",
             height: "34px",
             borderRadius: "10px",
             background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
             border: "none",
-            cursor: "pointer",
+            cursor: askMutation.isPending ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -98,6 +126,12 @@ export default function CalculatorPage() {
           </svg>
         </button>
       </div>
+
+      {response && (
+        <p style={{ color: "rgba(255,255,255,0.65)", fontSize: "13px", margin: "-8px 0 20px" }}>
+          {response}
+        </p>
+      )}
 
       {/* Calculator Card */}
       <div
@@ -124,17 +158,29 @@ export default function CalculatorPage() {
               marginBottom: "20px",
             }}
           >
-            <span
+            <input
+              type="text"
+              value={expression}
+              onChange={(e) => setExpression(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSolve();
+                }
+              }}
               style={{
+                flex: 1,
+                background: "transparent",
+                border: "none",
+                outline: "none",
                 color: "#ffffff",
                 fontSize: "18px",
                 fontWeight: 500,
                 fontFamily: "monospace",
                 letterSpacing: "1px",
+                marginRight: "12px",
               }}
-            >
-              {expression}
-            </span>
+            />
             <button
               onClick={handleSolve}
               style={{

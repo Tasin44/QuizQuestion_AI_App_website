@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getProfile, updateProfile } from "@/app/(auth)/_lib/api";
+import { getProfile, updateProfile, type ChatAskModel } from "@/app/(auth)/_lib/api";
 import { getAccessToken } from "@/app/(auth)/_lib/authStorage";
+import ModelSelector from "../_components/ModelSelector";
 
 const aiModels = [
   { id: "gpt-4o", name: "GPT-4o", badge: "OpenAI", badgeColor: "#22c55e", desc: "Best for complex reasoning & long answers", icon: "🤖" },
@@ -97,6 +98,8 @@ export default function SettingsPage() {
   const [profileError, setProfileError] = useState("");
   const [profileSuccess, setProfileSuccess] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
+  
+  const [askModel, setAskModel] = useState<ChatAskModel>("gpt");
   const queryClient = useQueryClient();
 
   const profileQuery = useQuery({
@@ -141,6 +144,8 @@ export default function SettingsPage() {
     setProfileSuccess("");
     updateProfileMutation.mutate();
   };
+
+  
 
   const toggleSubject = (id: string) => {
     setSelectedSubjects((prev) =>
@@ -318,6 +323,16 @@ export default function SettingsPage() {
 
           {/* ===== RIGHT ===== */}
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+
+            {/* Ask AI */}
+            <div style={cardStyle}>
+              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 14px" }}>Ask AI</h2>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+                <ModelSelector size="sm" value={askModel} onChange={setAskModel} />
+              </div>
+              {/* Input removed per request: settings page no longer shows Ask input or Send button */}
+              {/* Ask response hidden on settings page */}
+            </div>
 
             {/* AI Personalization */}
             <div style={cardStyle}>

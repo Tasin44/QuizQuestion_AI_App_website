@@ -8,6 +8,8 @@ import RevolutionSection from "./_components/sections/RevolutionSection";
 import PricingSection from "./_components/sections/PricingSection";
 import DevicesSection from "./_components/sections/DevicesSection";
 import ModelSelector from "./_components/ModelSelector";
+import { useMutation } from "@tanstack/react-query";
+import { askChat, type ChatAskModel } from "@/app/(auth)/_lib/api";
 
 const subjectPills = ["Math", "Physics", "Chemistry", "Biology", "Statistics"];
 
@@ -20,6 +22,24 @@ function getGreeting() {
 
 export default function DashboardPage() {
   const [message, setMessage] = useState("");
+  const [model, setModel] = useState<ChatAskModel>("gpt");
+  const [response, setResponse] = useState("");
+
+  const askMutation = useMutation({
+    mutationFn: () => askChat(message, model),
+    onSuccess: (data) => {
+      setResponse(data.data.content || "");
+    },
+    onError: (err: Error) => {
+      setResponse(err?.message || "Request failed.");
+    },
+  });
+
+  const handleAsk = () => {
+    if (!message.trim()) return;
+    setResponse("");
+    askMutation.mutate();
+  };
 
   return (
     <div style={{ backgroundColor: "#0A0A0F", minHeight: "100%" }}>
@@ -31,6 +51,8 @@ export default function DashboardPage() {
           alignItems: "center",
           justifyContent: "center",
           padding: "100px 40px 60px",
+          maxWidth: "1200px",
+          margin: "0 auto",
           textAlign: "center",
         }}
       >
@@ -48,7 +70,7 @@ export default function DashboardPage() {
         {/* Model & Calculator Pills */}
         <div style={{ display: "flex", gap: "10px", marginBottom: "20px", alignItems: "center" }}>
           {/* Dynamic Model Selector */}
-          <ModelSelector size="md" />
+          <ModelSelector size="md" value={model} onChange={setModel} />
 
           {/* Calculator pill */}
           <Link
@@ -97,6 +119,12 @@ export default function DashboardPage() {
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAsk();
+              }
+            }}
             placeholder="Type your question or upload an image..."
             style={{
               flex: 1,
@@ -108,13 +136,15 @@ export default function DashboardPage() {
             }}
           />
           <button
+            onClick={handleAsk}
+            disabled={askMutation.isPending}
             style={{
               width: "36px",
               height: "36px",
               borderRadius: "10px",
               background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
               border: "none",
-              cursor: "pointer",
+              cursor: askMutation.isPending ? "not-allowed" : "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -127,6 +157,12 @@ export default function DashboardPage() {
             </svg>
           </button>
         </div>
+
+        {response && (
+          <p style={{ color: "rgba(255,255,255,0.65)", fontSize: "13px", margin: "0 0 16px" }}>
+            {response}
+          </p>
+        )}
 
         {/* Subject Pills */}
         <div style={{ display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap", justifyContent: "center" }}>
