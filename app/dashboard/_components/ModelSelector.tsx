@@ -112,7 +112,14 @@ export default function ModelSelector({ size = "sm", value, onChange, direction 
   }, []);
 
   return (
-    <div ref={ref} style={{ position: "relative", display: "inline-block" }}>
+    <div
+      ref={ref}
+      style={{
+        position: "relative",
+        display: "inline-block",
+        zIndex: open ? 2000 : 1,
+      }}
+    >
       {/* Pill Trigger */}
       <button
         onClick={() => setOpen(!open)}
@@ -167,7 +174,7 @@ export default function ModelSelector({ size = "sm", value, onChange, direction 
             borderRadius: "14px",
             padding: "8px",
             minWidth: "220px",
-            zIndex: 999,
+            zIndex: 9999,
             boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
             animation: "fadeIn 0.15s ease",
           }}

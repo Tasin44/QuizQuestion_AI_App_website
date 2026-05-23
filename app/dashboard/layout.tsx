@@ -17,7 +17,17 @@ export default function DashboardLayout({
       <Sidebar onLogout={() => setShowLogoutModal(true)} />
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <TopNavbar onLogout={() => setShowLogoutModal(true)} />
-        <main style={{ flex: 1, overflowY: "auto", overflowX: "hidden", display: "flex", flexDirection: "column" }}>
+        <main
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            overflowX: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            position: "relative",
+            zIndex: 150,
+          }}
+        >
           <div style={{ flex: 1 }}>
             {children}
           </div>

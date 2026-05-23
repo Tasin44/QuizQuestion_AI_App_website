@@ -38,7 +38,6 @@ function getGreeting() {
   return "Good evening";
 }
 
-/* ───── Typing indicator dots ───── */
 function TypingIndicator() {
   return (
     <div style={{ display: "flex", gap: "4px", padding: "4px 0" }}>
@@ -58,13 +57,10 @@ function TypingIndicator() {
   );
 }
 
-// Render inline elements like bold (**), triple stars (***), or backticks (`)
 function renderInlineMarkdown(text: string) {
   if (!text) return "";
 
-  // Split by inline code first
   const codeParts = text.split(/(`[^`]+`)/g);
-  
   return codeParts.map((part, partIdx) => {
     if (part.startsWith("`") && part.endsWith("`")) {
       return (
@@ -84,46 +80,14 @@ function renderInlineMarkdown(text: string) {
       );
     }
 
-    // Format bold/italic stars
-    // Handle triple asterisks: ***text*** -> Bold + Italic
-    // Handle double asterisks: **text** -> Bold
-    // Handle single asterisk: *text* -> Italic
-    const starParts = part.split(/(\*\*\*.*?\*\*\*|\*\*.*?\*\*|\*.*?\*)/g);
-    
-    return starParts.map((subPart, subIdx) => {
-      if (subPart.startsWith("***") && subPart.endsWith("***")) {
-        return (
-          <strong key={subIdx} style={{ fontWeight: 700, fontStyle: "italic", color: "#ffffff" }}>
-            {subPart.slice(3, -3)}
-          </strong>
-        );
-      }
-      if (subPart.startsWith("**") && subPart.endsWith("**")) {
-        return (
-          <strong key={subIdx} style={{ fontWeight: 700, color: "#ffffff" }}>
-            {subPart.slice(2, -2)}
-          </strong>
-        );
-      }
-      if (subPart.startsWith("*") && subPart.endsWith("*")) {
-        return (
-          <em key={subIdx} style={{ fontStyle: "italic" }}>
-            {subPart.slice(1, -1)}
-          </em>
-        );
-      }
-      return subPart;
-    });
+    return part;
   });
 }
 
-// Render block markdown like lists, code blocks, and headers cleanly
 function renderMessageContent(content: string) {
   if (!content) return null;
 
-  // Process code blocks first
   const parts = content.split(/(```[\s\S]*?```)/g);
-
   return parts.map((part, index) => {
     if (part.startsWith("```") && part.endsWith("```")) {
       const match = part.match(/```(\w*)\n([\s\S]*?)```/);
@@ -149,99 +113,9 @@ function renderMessageContent(content: string) {
       );
     }
 
-    // Process normal text line by line
-    const lines = part.split("\n");
-    return (
-      <div key={index}>
-        {lines.map((line, lineIdx) => {
-          const cleanLine = line;
-
-          // Render bullet lists cleanly
-          const bulletMatch = cleanLine.match(/^(\s*)[-*+•]\s+(.*)/);
-          if (bulletMatch) {
-            const indent = bulletMatch[1].length * 12;
-            return (
-              <div
-                key={lineIdx}
-                style={{
-                  display: "flex",
-                  gap: "6px",
-                  paddingLeft: `${indent + 8}px`,
-                  margin: "4px 0",
-                  color: "inherit",
-                }}
-              >
-                <span>•</span>
-                <span>{renderInlineMarkdown(bulletMatch[2])}</span>
-              </div>
-            );
-          }
-
-          // Render numbered lists cleanly
-          const numberMatch = cleanLine.match(/^(\s*)\d+\.\s+(.*)/);
-          if (numberMatch) {
-            const indent = numberMatch[1].length * 12;
-            const num = cleanLine.match(/^\s*(\d+)\./)?.[1] || "1";
-            return (
-              <div
-                key={lineIdx}
-                style={{
-                  display: "flex",
-                  gap: "6px",
-                  paddingLeft: `${indent + 8}px`,
-                  margin: "4px 0",
-                  color: "inherit",
-                }}
-              >
-                <span>{num}.</span>
-                <span>{renderInlineMarkdown(numberMatch[2])}</span>
-              </div>
-            );
-          }
-
-          // Render headers cleanly
-          if (cleanLine.startsWith("### ")) {
-            return (
-              <h4 key={lineIdx} style={{ fontSize: "15px", fontWeight: 700, margin: "12px 0 6px", color: "#fff" }}>
-                {renderInlineMarkdown(cleanLine.slice(4))}
-              </h4>
-            );
-          }
-          if (cleanLine.startsWith("## ")) {
-            return (
-              <h3 key={lineIdx} style={{ fontSize: "17px", fontWeight: 700, margin: "16px 0 8px", color: "#fff" }}>
-                {renderInlineMarkdown(cleanLine.slice(3))}
-              </h3>
-            );
-          }
-          if (cleanLine.startsWith("# ")) {
-            return (
-              <h2 key={lineIdx} style={{ fontSize: "19px", fontWeight: 700, margin: "20px 0 10px", color: "#fff" }}>
-                {renderInlineMarkdown(cleanLine.slice(2))}
-              </h2>
-            );
-          }
-
-          // Normal line
-          return (
-            <p
-              key={lineIdx}
-              style={{
-                margin: cleanLine.trim() === "" ? "8px 0" : "4px 0",
-                minHeight: cleanLine.trim() === "" ? "8px" : "auto",
-                lineHeight: "1.6",
-                color: "inherit",
-              }}
-            >
-              {renderInlineMarkdown(cleanLine)}
-            </p>
-          );
-        })}
-      </div>
-    );
+    return <p key={index} style={{ margin: "4px 0", lineHeight: 1.6, color: "inherit" }}>{renderInlineMarkdown(part)}</p>;
   });
 }
-
 
 export default function DashboardPage() {
   const [message, setMessage] = useState("");
@@ -363,6 +237,14 @@ export default function DashboardPage() {
         .attach-btn:hover { background-color: rgba(255,255,255,0.1) !important; }
         .send-btn:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 4px 20px rgba(108,92,231,0.4); }
         .subject-pill:hover { border-color: rgba(79,70,229,0.4) !important; color: #ffffff !important; }
+        .composer-row { display: flex; align-items: flex-end; gap: 8px; padding: 4px 6px; }
+        .composer-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+        @media (max-width: 900px) {
+          .chat-input-area { padding: 10px; }
+          .composer-row { flex-wrap: wrap; }
+          .composer-row textarea { flex-basis: 100%; width: 100%; }
+          .composer-actions { width: 100%; justify-content: space-between; }
+        }
       `}</style>
 
       {/* ===== HERO: Chat Home ===== */}
@@ -391,32 +273,11 @@ export default function DashboardPage() {
             <h1 style={{ color: "#ffffff", fontSize: "36px", fontWeight: 700, margin: "0 0 32px", lineHeight: 1.25 }}>
               Ask anything.
             </h1>
+            <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "14px", margin: "0 0 24px", maxWidth: "540px", lineHeight: 1.6 }}>
+              Ask a question, upload an image, or open the calculator for quick equation work. The layout adjusts on smaller screens so the controls stay easy to reach.
+            </p>
           </>
         )}
-
-        {/* Calculator Pill */}
-        <div style={{ display: "flex", gap: "10px", marginBottom: "20px", alignItems: "center" }}>
-          <Link
-            href="/dashboard/calculator"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "7px 14px",
-              backgroundColor: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "20px",
-              cursor: "pointer",
-              textDecoration: "none",
-              transition: "all 0.2s ease",
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="4" y="2" width="16" height="20" rx="2" /><line x1="8" x2="16" y1="6" y2="6" />
-            </svg>
-            <span style={{ color: "rgba(255,255,255,0.75)", fontSize: "13px", fontWeight: 500 }}>Calculator</span>
-          </Link>
-        </div>
 
         {/* ===== CHAT MESSAGES AREA ===== */}
         {hasChat && (
@@ -696,7 +557,7 @@ export default function DashboardPage() {
           )}
 
           {/* Input row */}
-          <div style={{ display: "flex", alignItems: "flex-end", gap: "8px", padding: "4px 6px" }}>
+          <div className="composer-row">
             {/* Image upload */}
             <button
               className="attach-btn"
@@ -792,9 +653,33 @@ export default function DashboardPage() {
               }}
             />
 
-            {/* Model Selector inside input field on the right side */}
-            <div style={{ flexShrink: 0, alignSelf: "flex-end", paddingBottom: "1px" }}>
-              <ModelSelector size="sm" value={model} onChange={setModel} direction="up" />
+            {/* Right-side controls */}
+            <div className="composer-actions">
+              <Link
+                href="/dashboard/calculator"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "6px 12px",
+                  backgroundColor: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: "20px",
+                  cursor: "pointer",
+                  textDecoration: "none",
+                  transition: "all 0.2s ease",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="4" y="2" width="16" height="20" rx="2" /><line x1="8" x2="16" y1="6" y2="6" />
+                </svg>
+                <span style={{ color: "rgba(255,255,255,0.75)", fontSize: "13px", fontWeight: 500 }}>Calculator</span>
+              </Link>
+
+              <div style={{ flexShrink: 0, paddingBottom: "1px" }}>
+                <ModelSelector size="sm" value={model} onChange={setModel} direction="down" />
+              </div>
             </div>
 
             {/* Send button (animates and displays only when input is typed or file uploaded) */}

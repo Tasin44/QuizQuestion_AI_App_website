@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
+import Link from "next/link";
 import { evaluate } from "mathjs";
 import ModelSelector from "../_components/ModelSelector";
 import { useMutation } from "@tanstack/react-query";
@@ -248,6 +249,29 @@ export default function CalculatorPage() {
 
   return (
     <div style={{ padding: "24px 32px", maxWidth: "1200px", width: "100%", margin: "0" }}>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+        <Link
+          href="/dashboard"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            padding: "8px 14px",
+            borderRadius: "20px",
+            border: "1px solid rgba(255,255,255,0.1)",
+            backgroundColor: "rgba(255,255,255,0.06)",
+            color: "rgba(255,255,255,0.8)",
+            textDecoration: "none",
+            fontSize: "13px",
+            fontWeight: 500,
+            transition: "all 0.2s ease",
+          }}
+        >
+          <span aria-hidden="true">←</span>
+          <span>Back to Chat</span>
+        </Link>
+      </div>
+
       {/* 2-Column side-by-side Flex layout */}
       <div style={{ display: "flex", gap: "28px", alignItems: "flex-start", width: "100%", flexWrap: "wrap" }}>
         
@@ -552,7 +576,7 @@ export default function CalculatorPage() {
 
               {/* Model Selector inside input field on the right side */}
               <div style={{ flexShrink: 0, alignSelf: "flex-end", paddingBottom: "1px" }}>
-                <ModelSelector size="sm" value={model} onChange={setModel} direction="up" />
+                <ModelSelector size="sm" value={model} onChange={setModel} direction="down" />
               </div>
 
               {/* Send button (animates and displays only when input is typed or file uploaded) */}
