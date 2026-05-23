@@ -11,7 +11,7 @@ const plans = [
 ];
 export default function PricingSection() {
   return (
-    <section style={{ padding: "80px 40px", textAlign: "center", maxWidth: "900px", margin: "0 auto" }}>
+    <section id="pricing" style={{ padding: "80px 40px", textAlign: "center", maxWidth: "900px", margin: "0 auto" }}>
       <h2 style={{ color: "#ffffff", fontSize: "34px", fontWeight: 700, margin: "0 0 50px" }}>Start for free. Upgrade anytime.</h2>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px" }}>
         {plans.map((p) => (

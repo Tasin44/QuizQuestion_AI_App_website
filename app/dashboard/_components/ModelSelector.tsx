@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 
 const models = [
   {
@@ -73,7 +73,7 @@ const models = [
   },
   {
     id: "claude-6",
-    name: "Claude 6",
+    name: "Claude 4.6",
     desc: "Math",
     color: "#f59e0b",
     apiModel: "claude",
@@ -90,18 +90,18 @@ interface ModelSelectorProps {
   size?: "sm" | "md";
   value?: "gpt" | "claude" | "gemini";
   onChange?: (value: "gpt" | "claude" | "gemini") => void;
+  direction?: "up" | "down";
 }
 
-export default function ModelSelector({ size = "sm", value, onChange }: ModelSelectorProps) {
+export default function ModelSelector({ size = "sm", value, onChange, direction = "down" }: ModelSelectorProps) {
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState(models[0]);
+  const [internalValue, setInternalValue] = useState<"gpt" | "claude" | "gemini">(value ?? models[0].apiModel as "gpt" | "claude" | "gemini");
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!value) return;
-    const next = models.find((m) => m.apiModel === value);
-    if (next) setSelected(next);
-  }, [value]);
+  const selectedValue = value ?? internalValue;
+  const selected = useMemo(() => {
+    return models.find((m) => m.apiModel === selectedValue) ?? models[0];
+  }, [selectedValue]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -157,8 +157,11 @@ export default function ModelSelector({ size = "sm", value, onChange }: ModelSel
         <div
           style={{
             position: "absolute",
-            top: "calc(100% + 8px)",
-            left: "0",
+            ...(direction === "up" 
+              ? { bottom: "calc(100% + 8px)" } 
+              : { top: "calc(100% + 8px)" }
+            ),
+            right: "0",
             backgroundColor: "#16161f",
             border: "1px solid rgba(255,255,255,0.1)",
             borderRadius: "14px",
@@ -175,7 +178,7 @@ export default function ModelSelector({ size = "sm", value, onChange }: ModelSel
               <button
                 key={m.id}
                 onClick={() => {
-                  setSelected(m);
+                  setInternalValue(m.apiModel as "gpt" | "claude" | "gemini");
                   setOpen(false);
                   if (onChange) onChange(m.apiModel as "gpt" | "claude" | "gemini");
                 }}

@@ -1,7 +1,7 @@
 "use client";
 export default function DevicesSection() {
   return (
-    <section style={{ padding: "80px 40px", maxWidth: "1200px", margin: "0 auto" }}>
+    <section id="mobile-app" style={{ padding: "80px 40px", maxWidth: "1200px", margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "60px" }}>
         <div style={{ flex: 1 }}>
           <h2 style={{ color: "#ffffff", fontSize: "34px", fontWeight: 700, margin: "0 0 6px", lineHeight: 1.2 }}>Quiz Question AI</h2>

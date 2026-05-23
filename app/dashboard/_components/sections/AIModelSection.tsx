@@ -6,7 +6,7 @@ const models = [
 ];
 export default function AIModelSection() {
   return (
-    <section style={{ padding: "80px 40px", textAlign: "center", maxWidth: "1200px", margin: "0 auto" }}>
+    <section id="ai-models" style={{ padding: "80px 40px", textAlign: "center", maxWidth: "1200px", margin: "0 auto" }}>
       <h2 style={{ color: "#ffffff", fontSize: "34px", fontWeight: 700, margin: "0 0 50px" }}>Choose Your AI Model</h2>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
         {models.map((m) => (

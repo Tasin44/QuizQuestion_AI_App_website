@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import AuthCard from "../_components/AuthCard";
 import { AuthButton } from "../_components/AuthInput";
 import { useMutation } from "@tanstack/react-query";
-import { verifyOtp, verifyResetOtp } from "../_lib/api";
+import { verifyOtp, verifyResetOtp, type VerifyOtpResponse, type ResetVerifyOtpResponse } from "../_lib/api";
 import {
   getPendingEmail,
   clearPendingEmail,
@@ -18,9 +18,9 @@ export default function VerifyOTPPage() {
   const router = useRouter();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(45);
-  const [email, setEmail] = useState("");
+  const [email] = useState(() => getPendingEmail());
   const [error, setError] = useState("");
-  const [flow, setFlow] = useState("");
+  const [flow] = useState(() => getOtpFlow());
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -28,11 +28,6 @@ export default function VerifyOTPPage() {
     const interval = setInterval(() => setTimer((t) => t - 1), 1000);
     return () => clearInterval(interval);
   }, [timer]);
-
-  useEffect(() => {
-    setEmail(getPendingEmail());
-    setFlow(getOtpFlow());
-  }, []);
 
   const handleChange = (i: number, val: string) => {
     if (!/^\d?$/.test(val)) return;
@@ -46,8 +41,8 @@ export default function VerifyOTPPage() {
     if (e.key === "Backspace" && !otp[i] && i > 0) inputs.current[i - 1]?.focus();
   };
 
-  const verifyMutation = useMutation({
-    mutationFn: ({ otpCode, emailValue, otpFlow }: { otpCode: string; emailValue: string; otpFlow: string }) => {
+  const verifyMutation = useMutation<VerifyOtpResponse | ResetVerifyOtpResponse, Error, { otpCode: string; emailValue: string; otpFlow: string }>({
+    mutationFn: ({ otpCode, emailValue, otpFlow }) => {
       if (otpFlow === "reset") {
         return verifyResetOtp(emailValue, otpCode);
       }

@@ -1,4 +1,4 @@
-export const API_BASE_URL = "https://api.quizquestion.ai";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://api.quizquestion.ai";
 
 export type ApiErrorDetails = Record<string, string[] | string> | null;
 
@@ -133,6 +133,8 @@ export type ProfileResponse = {
     two_factor_enabled: boolean;
     badges: unknown[];
     level: number;
+    birth_date: string | null;
+    is_parent: boolean;
     created_at: string;
     updated_at: string;
   };
@@ -197,7 +199,174 @@ export function getProfile(accessToken?: string) {
 export function updateProfile(payload: ProfileUpdatePayload, accessToken?: string) {
   return requestPatch<ProfileResponse>("/profile/", payload, accessToken);
 }
+function getStoredAccessToken(): string {
+  if (typeof window === "undefined") return "";
+  const key = "qqai_access_token";
+  const fromLS = localStorage.getItem(key);
+  if (fromLS) return fromLS;
+  const match = document.cookie.split("; ").find((c) => c.startsWith(`${key}=`));
+  return match ? decodeURIComponent(match.split("=")[1]) : "";
+}
 
 export function askChat(message: string, model: ChatAskModel) {
-  return request<ChatAskResponse>("/chat/ask/", { message, model });
+  const token = getStoredAccessToken();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  return fetch(`${API_BASE_URL}/chat/ask/`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ message, model }),
+  }).then(async (res) => {
+    const data = await res.json().catch(() => null);
+    if (!res.ok || data?.success === false) {
+      throw new ApiError(data?.message || "Request failed", data?.data || null);
+    }
+    return data as ChatAskResponse;
+  });
 }
+
+export function askChatFormData(params: {
+  message: string;
+  model: ChatAskModel;
+  subject?: string;
+  image?: File;
+  file?: File;
+}): Promise<ChatAskResponse> {
+  const token = getStoredAccessToken();
+
+  const formData = new FormData();
+  formData.append("message", params.message);
+  formData.append("model", params.model);
+  if (params.subject) formData.append("subject", params.subject);
+  if (params.image) formData.append("image", params.image);
+  if (params.file) formData.append("file", params.file);
+
+  return fetch(`${API_BASE_URL}/chat/ask/`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  })
+    .then(async (res) => {
+      const data = await res.json().catch(() => null);
+      if (!res.ok || data?.success === false) {
+        throw new ApiError(data?.message || "Request failed", data?.data || null);
+      }
+      return data as ChatAskResponse;
+    });
+}
+
+export type ChatHistoryItem = {
+  id: string;
+  prompt: string;
+  ai_response: string;
+  image_url: string | null;
+  file_url: string | null;
+  created_at: string;
+};
+
+export type ChatHistoryResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: ChatHistoryItem[];
+  timestamp: string;
+};
+
+export function getChatHistory(): Promise<ChatHistoryResponse> {
+  const token = getStoredAccessToken();
+  return fetch(`${API_BASE_URL}/chat/ask/`, {
+    method: "GET",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+    .then(async (res) => {
+      const data = await res.json().catch(() => null);
+      if (!res.ok || data?.success === false) {
+        throw new ApiError(data?.message || "Request failed", data?.data || null);
+      }
+      return data as ChatHistoryResponse;
+    });
+}
+
+export type ChildScanItem = {
+  id: string;
+  subject: string;
+  image_url: string | null;
+  question: string;
+  ai_response: string;
+};
+
+export type ChildScansResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: Record<string, ChildScanItem[]>;
+  timestamp: string;
+};
+
+export type ChildChatItem = {
+  id: string;
+  prompt: string;
+  ai_response: string;
+  image_url: string | null;
+  file_url: string | null;
+  created_at: string;
+};
+
+export type ChildChatsResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: Record<string, ChildChatItem[]>;
+  timestamp: string;
+};
+
+export function createParentalRelation(relatedEmail: string, relationType: string): Promise<{ success: boolean; message: string }> {
+  const token = getStoredAccessToken();
+  return fetch(`${API_BASE_URL}/2fa/parental-control/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({
+      related_email: relatedEmail,
+      relation_type: relationType,
+    }),
+  }).then(async (res) => {
+    const data = await res.json().catch(() => null);
+    if (!res.ok || data?.success === false) {
+      throw new ApiError(data?.message || "Failed to create relation", data?.data || null);
+    }
+    return data;
+  });
+}
+
+export function getChildScans(): Promise<ChildScansResponse> {
+  const token = getStoredAccessToken();
+  return fetch(`${API_BASE_URL}/2fa/parental-control/child-scans/`, {
+    method: "GET",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  }).then(async (res) => {
+    const data = await res.json().catch(() => null);
+    if (!res.ok || data?.success === false) {
+      throw new ApiError(data?.message || "Failed to fetch child scans", data?.data || null);
+    }
+    return data as ChildScansResponse;
+  });
+}
+
+export function getChildChats(): Promise<ChildChatsResponse> {
+  const token = getStoredAccessToken();
+  return fetch(`${API_BASE_URL}/2fa/parental-control/child-chats/`, {
+    method: "GET",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  }).then(async (res) => {
+    const data = await res.json().catch(() => null);
+    if (!res.ok || data?.success === false) {
+      throw new ApiError(data?.message || "Failed to fetch child chats", data?.data || null);
+    }
+    return data as ChildChatsResponse;
+  });
+}
+

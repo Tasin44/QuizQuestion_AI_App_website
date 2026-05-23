@@ -7,7 +7,7 @@ const features = [
 ];
 export default function CompanionSection() {
   return (
-    <section style={{ padding: "80px 40px", textAlign: "center", maxWidth: "1200px", margin: "0 auto" }}>
+    <section id="features" style={{ padding: "80px 40px", textAlign: "center", maxWidth: "1200px", margin: "0 auto" }}>
       <h2 style={{ color: "#ffffff", fontSize: "34px", fontWeight: 700, margin: "0 0 8px" }}>The Only AI Companion You Need to Succeed</h2>
       <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "14px", margin: "0 0 50px" }}>Powered by the world&apos;s best AI models for learning</p>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" }}>

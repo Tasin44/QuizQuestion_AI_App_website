@@ -1,122 +1,153 @@
 "use client";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { getChatHistory } from "@/app/(auth)/_lib/api";
 
-const chatHistory = [
-  {
-    id: "chat-1",
-    tag: "Math",
-    tagColor: "#ef4444",
-    title: "Solve for x in the equation 3x + 7 = 22",
-    desc: "From y = ln(4-x), we get 4-x = eʸ, therefore x = 4 - eʸ",
-    date: "15 May 2026",
-  },
-  {
-    id: "chat-2",
-    tag: "Math",
-    tagColor: "#ef4444",
-    title: "Solve for x in the equation 3x + 7 = 22",
-    desc: "From y = ln(4-x), we get 4-x = eʸ, therefore x = 4 - eʸ",
-    date: "15 May 2026",
-  },
-  {
-    id: "chat-3",
-    tag: "Physics",
-    tagColor: "#22c55e",
-    title: "Calculate kinetic energy of a moving object",
-    desc: "KE = ½mv². For m = 5kg and v = 10m/s, KE = 250 J",
-    date: "14 May 2026",
-  },
-  {
-    id: "chat-4",
-    tag: "Chemistry",
-    tagColor: "#eab308",
-    title: "Balance the equation: Fe + O₂ → Fe₂O₃",
-    desc: "4Fe + 3O₂ → 2Fe₂O₃. Count atoms on each side to verify.",
-    date: "14 May 2026",
-  },
-  {
-    id: "chat-5",
-    tag: "Math",
-    tagColor: "#ef4444",
-    title: "Solve for x in the equation 3x + 7 = 22",
-    desc: "From y = ln(4-x), we get 4-x = eʸ, therefore x = 4 - eʸ",
-    date: "13 May 2026",
-  },
-];
+function formatDate(dateStr: string) {
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+function getTagDetails(prompt: string) {
+  const p = prompt.toLowerCase();
+  if (p.includes("math") || p.includes("+") || p.includes("-") || p.includes("*") || p.includes("/") || p.includes("solve") || p.includes("equation")) {
+    return { tag: "Math", color: "#ef4444" };
+  }
+  if (p.includes("physic") || p.includes("force") || p.includes("energy") || p.includes("gravity")) {
+    return { tag: "Physics", color: "#22c55e" };
+  }
+  if (p.includes("chem") || p.includes("atom") || p.includes("reaction") || p.includes("molecule")) {
+    return { tag: "Chemistry", color: "#eab308" };
+  }
+  if (p.includes("bio") || p.includes("cell") || p.includes("plant") || p.includes("gene")) {
+    return { tag: "Biology", color: "#38bdf8" };
+  }
+  return { tag: "General", color: "#8b5cf6" };
+}
 
 export default function HistoryPage() {
-  return (
-    <div style={{ padding: "32px 40px", maxWidth: "700px" }}>
-      {/* Logo */}
-      <div style={{ marginBottom: "8px" }}>
-        <img
-          src="/images/ai-logo.png"
-          alt="Quiz Question AI"
-          style={{ height: "38px", objectFit: "contain" }}
-        />
-      </div>
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["chatHistory"],
+    queryFn: getChatHistory,
+  });
 
+  const historyItems = data?.data || [];
+
+  return (
+    <div style={{ padding: "32px 40px", maxWidth: "800px", margin: "0" }}>
+      {/* Header */}
       <h1 style={{ color: "#ffffff", fontSize: "26px", fontWeight: 700, margin: "0 0 28px" }}>
         Chat History
       </h1>
 
+      {isLoading && (
+        <div style={{ display: "flex", justifyContent: "center", padding: "40px 0" }}>
+          <div
+            style={{
+              width: "24px",
+              height: "24px",
+              border: "2px solid rgba(255,255,255,0.2)",
+              borderTopColor: "#4F46E5",
+              borderRadius: "50%",
+              animation: "spin 0.8s linear infinite",
+            }}
+          />
+        </div>
+      )}
+
+      {error && (
+        <p style={{ color: "#ef4444", fontSize: "14px", textAlign: "center" }}>
+          Failed to load chat history. Please make sure you are logged in.
+        </p>
+      )}
+
+      {!isLoading && !error && historyItems.length === 0 && (
+        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "14px", textAlign: "center", marginTop: "40px" }}>
+          No chat history found. Start a new session on the dashboard!
+        </p>
+      )}
+
       {/* History Cards */}
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        {chatHistory.map((item) => (
-          <Link
-            key={item.id}
-            href={`/dashboard/history/${item.id}`}
-            style={{ textDecoration: "none" }}
-          >
-            <div
-              style={{
-                backgroundColor: "#111118",
-                borderRadius: "14px",
-                border: "1px solid rgba(255,255,255,0.06)",
-                padding: "22px 24px",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "rgba(79,70,229,0.3)";
-                e.currentTarget.style.transform = "translateY(-2px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
-                e.currentTarget.style.transform = "translateY(0)";
-              }}
+        {historyItems.map((item) => {
+          const { tag, color } = getTagDetails(item.prompt);
+          return (
+            <Link
+              key={item.id}
+              href={`/dashboard/history/${item.id}`}
+              style={{ textDecoration: "none" }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
-                {/* Tag */}
-                <span
+              <div
+                style={{
+                  backgroundColor: "#111118",
+                  borderRadius: "14px",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  padding: "22px 24px",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(79,70,229,0.3)";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
+                  {/* Tag */}
+                  <span
+                    style={{
+                      display: "inline-block",
+                      padding: "3px 12px",
+                      borderRadius: "14px",
+                      backgroundColor: `${color}20`,
+                      color: color,
+                      fontSize: "11px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {tag}
+                  </span>
+                  {/* Date */}
+                  <span style={{ color: "rgba(255,255,255,0.35)", fontSize: "12px" }}>
+                    {formatDate(item.created_at)}
+                  </span>
+                </div>
+
+                <h3 style={{ color: "#ffffff", fontSize: "15px", fontWeight: 600, margin: "0 0 8px", lineHeight: 1.4 }}>
+                  {item.prompt}
+                </h3>
+                <p
                   style={{
-                    display: "inline-block",
-                    padding: "3px 12px",
-                    borderRadius: "14px",
-                    backgroundColor: `${item.tagColor}20`,
-                    color: item.tagColor,
-                    fontSize: "11px",
-                    fontWeight: 600,
+                    color: "rgba(255,255,255,0.4)",
+                    fontSize: "13px",
+                    margin: 0,
+                    lineHeight: 1.5,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  {item.tag}
-                </span>
-                {/* Date */}
-                <span style={{ color: "rgba(255,255,255,0.35)", fontSize: "12px" }}>
-                  {item.date}
-                </span>
+                  {item.ai_response}
+                </p>
               </div>
-
-              <h3 style={{ color: "#ffffff", fontSize: "15px", fontWeight: 600, margin: "0 0 6px" }}>
-                {item.title}
-              </h3>
-              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "13px", margin: 0, lineHeight: 1.5 }}>
-                {item.desc}
-              </p>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </div>
+
+      {/* Spin animation */}
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

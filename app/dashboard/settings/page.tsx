@@ -1,7 +1,16 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getProfile, updateProfile, type ChatAskModel } from "@/app/(auth)/_lib/api";
+import { 
+  getProfile, 
+  updateProfile, 
+  type ChatAskModel,
+  createParentalRelation, 
+  getChildScans, 
+  getChildChats, 
+  type ChildScanItem, 
+  type ChildChatItem 
+} from "@/app/(auth)/_lib/api";
 import { getAccessToken } from "@/app/(auth)/_lib/authStorage";
 import ModelSelector from "../_components/ModelSelector";
 
@@ -98,7 +107,16 @@ export default function SettingsPage() {
   const [profileError, setProfileError] = useState("");
   const [profileSuccess, setProfileSuccess] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
-  
+  const [inviteSuccess, setInviteSuccess] = useState("");
+  const [inviteError, setInviteError] = useState("");
+  const [isInviting, setIsInviting] = useState(false);
+  const [showActivityModal, setShowActivityModal] = useState(false);
+
+  const [childScans, setChildScans] = useState<Record<string, ChildScanItem[]>>({});
+  const [childChats, setChildChats] = useState<Record<string, ChildChatItem[]>>({});
+  const [isLoadingActivity, setIsLoadingActivity] = useState(false);
+  const [activityError, setActivityError] = useState("");
+
   const [askModel, setAskModel] = useState<ChatAskModel>("gpt");
   const queryClient = useQueryClient();
 
@@ -108,14 +126,48 @@ export default function SettingsPage() {
     staleTime: 60_000,
   });
 
-  useEffect(() => {
-    if (profileQuery.data?.data) {
-      setProfileName(profileQuery.data.data.name || "");
-      setProfileEmail(profileQuery.data.data.email || "");
-      setProfileImageUrl(profileQuery.data.data.image_url || "");
-      setProfileDescription(profileQuery.data.data.description || "");
+  const profileData = profileQuery.data?.data;
+
+  const isParent = !!profileData?.is_parent;
+
+  const handleSendInvite = async () => {
+    if (!inviteEmail || !inviteEmail.includes("@")) {
+      setInviteError("Please enter a valid email address.");
+      setInviteSuccess("");
+      return;
     }
-  }, [profileQuery.data]);
+    setInviteError("");
+    setInviteSuccess("");
+    setIsInviting(true);
+    try {
+      await createParentalRelation(inviteEmail, parentalRole);
+      setInviteSuccess(`Invitation successfully sent to ${inviteEmail} as ${parentalRole}.`);
+      setInviteEmail("");
+    } catch (err: unknown) {
+      setInviteError(err instanceof Error ? err.message : "Failed to send parental control invitation.");
+    } finally {
+      setIsInviting(false);
+    }
+  };
+
+  const handleOpenActivity = async () => {
+    if (!isParent) return;
+    setShowActivityModal(true);
+    setIsLoadingActivity(true);
+    setActivityError("");
+    try {
+      const [scansRes, chatsRes] = await Promise.all([
+        getChildScans(),
+        getChildChats()
+      ]);
+      setChildScans(scansRes.data || {});
+      setChildChats(chatsRes.data || {});
+    } catch (err: unknown) {
+      setActivityError(err instanceof Error ? err.message : "Failed to load children activity.");
+    } finally {
+      setIsLoadingActivity(false);
+    }
+  };
 
   const updateProfileMutation = useMutation({
     mutationFn: () => updateProfile({
@@ -145,7 +197,19 @@ export default function SettingsPage() {
     updateProfileMutation.mutate();
   };
 
-  
+  const handleToggleEditProfile = () => {
+    setProfileError("");
+    setProfileSuccess("");
+
+    if (!isEditingProfile) {
+      setProfileName(profileData?.name || "");
+      setProfileEmail(profileData?.email || "");
+      setProfileImageUrl(profileData?.image_url || "");
+      setProfileDescription(profileData?.description || "");
+    }
+
+    setIsEditingProfile((prev) => !prev);
+  };
 
   const toggleSubject = (id: string) => {
     setSelectedSubjects((prev) =>
@@ -182,11 +246,7 @@ export default function SettingsPage() {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "18px" }}>
                 <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: 0 }}>Profile Settings</h2>
                 <button
-                  onClick={() => {
-                    setProfileError("");
-                    setProfileSuccess("");
-                    setIsEditingProfile((prev) => !prev);
-                  }}
+                  onClick={handleToggleEditProfile}
                   style={{
                     padding: "6px 12px",
                     backgroundColor: "rgba(255,255,255,0.06)",
@@ -218,7 +278,6 @@ export default function SettingsPage() {
                   }}
                 >
                   {profileImageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={profileImageUrl} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   ) : (
                     (profileName || profileEmail || "U").slice(0, 2).toUpperCase()
@@ -494,18 +553,49 @@ export default function SettingsPage() {
                   placeholder="example@gmail.com" style={inputStyle}
                 />
               </div>
+
+              {inviteError && (
+                <p style={{ color: "#ff6b6b", fontSize: "12px", margin: "0 0 12px" }}>{inviteError}</p>
+              )}
+              {inviteSuccess && (
+                <p style={{ color: "#22c55e", fontSize: "12px", margin: "0 0 12px" }}>{inviteSuccess}</p>
+              )}
+
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                <button style={{
-                  padding: "11px", backgroundColor: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px",
-                  color: "#fff", fontSize: "12px", fontWeight: 600, cursor: "pointer",
-                }}>See Child&apos;s Activity</button>
-                <button style={{
-                  padding: "11px",
-                  background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
-                  border: "none", borderRadius: "10px", color: "#fff",
-                  fontSize: "12px", fontWeight: 600, cursor: "pointer",
-                }}>Send Invite</button>
+                <button
+                  onClick={handleOpenActivity}
+                  disabled={!isParent}
+                  style={{
+                    padding: "11px", 
+                    backgroundColor: isParent ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.02)",
+                    border: "1px solid rgba(255,255,255,0.08)", 
+                    borderRadius: "10px",
+                    color: isParent ? "#fff" : "rgba(255,255,255,0.2)", 
+                    fontSize: "12px", 
+                    fontWeight: 600, 
+                    cursor: isParent ? "pointer" : "not-allowed",
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  See Child&apos;s Activity
+                </button>
+                <button
+                  onClick={handleSendInvite}
+                  disabled={isInviting}
+                  style={{
+                    padding: "11px",
+                    background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
+                    border: "none", 
+                    borderRadius: "10px", 
+                    color: "#fff",
+                    fontSize: "12px", 
+                    fontWeight: 600, 
+                    cursor: "pointer",
+                    opacity: isInviting ? 0.7 : 1,
+                  }}
+                >
+                  {isInviting ? "Sending..." : "Send Invite"}
+                </button>
               </div>
             </div>
 
@@ -545,6 +635,186 @@ export default function SettingsPage() {
       </div>
 
        
+      {/* Children Activity Modal */}
+      {showActivityModal && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          backgroundColor: "rgba(10,10,15,0.75)", backdropFilter: "blur(8px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          zIndex: 9999, padding: "20px", boxSizing: "border-box"
+        }}>
+          <div style={{
+            backgroundColor: "#111118", border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "800px",
+            maxHeight: "85vh", display: "flex", flexDirection: "column",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.8)", boxSizing: "border-box"
+          }}>
+            {/* Modal Header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <div>
+                <h3 style={{ color: "#fff", fontSize: "18px", fontWeight: 700, margin: 0 }}>Children Activity Tracker</h3>
+                <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px", margin: "4px 0 0" }}>Monitor scans and chat logs of linked student accounts</p>
+              </div>
+              <button
+                onClick={() => setShowActivityModal(false)}
+                style={{
+                  background: "none", border: "none", color: "rgba(255,255,255,0.4)",
+                  fontSize: "24px", cursor: "pointer", padding: "4px", lineHeight: 1
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Modal Content (scrollable) */}
+            <div style={{ flex: 1, overflowY: "auto", paddingRight: "4px" }}>
+              {isLoadingActivity ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 0" }}>
+                  <div style={{
+                    width: "36px", height: "36px",
+                    border: "3px solid rgba(255,255,255,0.08)", borderTopColor: "#6c5ce7",
+                    borderRadius: "50%", animation: "spin 1s linear infinite"
+                  }} />
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "13px", marginTop: "14px" }}>Fetching children activities...</p>
+                </div>
+              ) : activityError ? (
+                <div style={{ textAlign: "center", padding: "40px 0" }}>
+                  <p style={{ color: "#ff6b6b", fontSize: "14px" }}>{activityError}</p>
+                </div>
+              ) : Object.keys(childScans).length === 0 && Object.keys(childChats).length === 0 ? (
+                <div style={{ textAlign: "center", padding: "60px 0", color: "rgba(255,255,255,0.4)" }}>
+                  <span style={{ fontSize: "40px", display: "block", marginBottom: "12px" }}>👥</span>
+                  <p style={{ fontSize: "14px", fontWeight: 500, margin: 0 }}>No active children accounts found.</p>
+                  <p style={{ fontSize: "12px", margin: "6px 0 0" }}>Send a relation invite above to link your child&apos;s account.</p>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                  {/* List children */}
+                  {Array.from(new Set([...Object.keys(childScans), ...Object.keys(childChats)])).map((email) => {
+                    const scans = childScans[email] || [];
+                    const chats = childChats[email] || [];
+                    return (
+                      <ChildItemCard key={email} email={email} scans={scans} chats={chats} />
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ChildItemCard({ email, scans, chats }: { email: string; scans: ChildScanItem[]; chats: ChildChatItem[] }) {
+  const [activeTab, setActiveTab] = useState<"scans" | "chats">("scans");
+
+  return (
+    <div style={{
+      backgroundColor: "#161622",
+      border: "1px solid rgba(255,255,255,0.06)",
+      borderRadius: "14px",
+      padding: "20px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "16px"
+    }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "18px" }}>🎓</span>
+          <span style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>{email}</span>
+        </div>
+        
+        {/* Toggle Tab */}
+        <div style={{ display: "flex", backgroundColor: "#0A0A0F", padding: "3px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)" }}>
+          <button
+            onClick={() => setActiveTab("scans")}
+            style={{
+              padding: "5px 12px",
+              borderRadius: "6px",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "11px",
+              fontWeight: 600,
+              backgroundColor: activeTab === "scans" ? "#1e1e2d" : "transparent",
+              color: activeTab === "scans" ? "#fff" : "rgba(255,255,255,0.4)",
+              transition: "all 0.15s ease"
+            }}
+          >
+            Scans ({scans.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("chats")}
+            style={{
+              padding: "5px 12px",
+              borderRadius: "6px",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "11px",
+              fontWeight: 600,
+              backgroundColor: activeTab === "chats" ? "#1e1e2d" : "transparent",
+              color: activeTab === "chats" ? "#fff" : "rgba(255,255,255,0.4)",
+              transition: "all 0.15s ease"
+            }}
+          >
+            Chats ({chats.length})
+          </button>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "300px", overflowY: "auto" }}>
+        {activeTab === "scans" ? (
+          scans.length === 0 ? (
+            <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "12px", textAlign: "center", margin: "20px 0" }}>No scans recorded for this child.</p>
+          ) : (
+            scans.map((scan) => (
+              <div key={scan.id} style={{
+                backgroundColor: "#0A0A0F", border: "1px solid rgba(255,255,255,0.03)", borderRadius: "10px", padding: "12px 14px"
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <span style={{
+                    padding: "2px 8px", backgroundColor: "rgba(108,92,231,0.12)", color: "#7b68ee", borderRadius: "12px", fontSize: "10px", fontWeight: 600
+                  }}>
+                    {scan.subject.toUpperCase()}
+                  </span>
+                </div>
+                <p style={{ color: "#fff", fontSize: "12px", fontWeight: 600, margin: "0 0 6px" }}>Q: {scan.question}</p>
+                <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "11px", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+                  <strong>AI Response:</strong> {scan.ai_response.length > 250 ? scan.ai_response.slice(0, 250) + "..." : scan.ai_response}
+                </div>
+              </div>
+            ))
+          )
+        ) : (
+          chats.length === 0 ? (
+            <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "12px", textAlign: "center", margin: "20px 0" }}>No chat conversations recorded for this child.</p>
+          ) : (
+            chats.map((chat) => (
+              <div key={chat.id} style={{
+                backgroundColor: "#0A0A0F", border: "1px solid rgba(255,255,255,0.03)", borderRadius: "10px", padding: "12px 14px"
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                  <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "10px" }}>
+                    {new Date(chat.created_at).toLocaleDateString()} {new Date(chat.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  {chat.file_url && (
+                    <a href={chat.file_url} target="_blank" rel="noreferrer" style={{ color: "#7b68ee", fontSize: "10px", textDecoration: "none" }}>
+                      📎 Attachment
+                    </a>
+                  )}
+                </div>
+                {chat.prompt && <p style={{ color: "#fff", fontSize: "12px", fontWeight: 600, margin: "0 0 6px" }}>Prompt: {chat.prompt}</p>}
+                <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "11px", lineHeight: 1.5, whiteSpace: "pre-wrap" }}>
+                  <strong>AI Response:</strong> {chat.ai_response.length > 250 ? chat.ai_response.slice(0, 250) + "..." : chat.ai_response}
+                </div>
+              </div>
+            ))
+          )
+        )}
+      </div>
     </div>
   );
 }

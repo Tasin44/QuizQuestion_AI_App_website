@@ -6,7 +6,6 @@ import { FaSquareXTwitter } from "react-icons/fa6";
 
 const footerLinks = {
   Product: ["Features", "Pricing", "AI Models", "Mobile App"],
-  Materials: ["Help Center", "Blog", "Tutorials", "API Docs"],
   Company: ["About Us", "Careers", "Contact", "Privacy Policy"],
 };
 
