@@ -1,6 +1,48 @@
 "use client";
 import { useState, useRef, useEffect, useMemo } from "react";
 
+/* ───── Image Logo Components ───── */
+
+function QQAILogo({ size = 28 }: { size?: number }) {
+  return (
+    <div style={{ width: size, height: size, borderRadius: "6px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1a1a28", flexShrink: 0 }}>
+      <img src="/images/ai-logo.png" alt="QQ AI" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+    </div>
+  );
+}
+
+function GPTLogo({ size = 28 }: { size?: number }) {
+  return (
+    <div style={{ width: size, height: size, borderRadius: "6px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1a1a28", flexShrink: 0 }}>
+      <img src="/images/gpt.png" alt="GPT" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+    </div>
+  );
+}
+
+function GeminiLogo({ size = 28 }: { size?: number }) {
+  return (
+    <div style={{ width: size, height: size, borderRadius: "6px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1a1a28", flexShrink: 0 }}>
+      <img src="/images/gemini.png" alt="Gemini" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+    </div>
+  );
+}
+
+function ClaudeLogo({ size = 28 }: { size?: number }) {
+  return (
+    <div style={{ width: size, height: size, borderRadius: "6px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1a1a28", flexShrink: 0 }}>
+      <img src="/images/claude.png" alt="Claude" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+    </div>
+  );
+}
+
+function AutoLogo({ size = 28 }: { size?: number }) {
+  return (
+    <div style={{ width: size, height: size, borderRadius: "6px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1a1a28", flexShrink: 0 }}>
+      <img src="/images/ai-logo.png" alt="Auto" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+    </div>
+  );
+}
+
 const models = [
   {
     id: "auto",
@@ -8,13 +50,7 @@ const models = [
     desc: "Smart",
     color: "#22c55e",
     apiModel: "gpt",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-        <rect width="24" height="24" rx="6" fill="#1a1a28" />
-        <path d="M12 4v6l4 2" stroke="#22c55e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx="12" cy="12" r="7" stroke="#22c55e" strokeWidth="1.5" />
-      </svg>
-    ),
+    Logo: AutoLogo,
   },
   {
     id: "qq-ai",
@@ -22,27 +58,15 @@ const models = [
     desc: "Quick",
     color: "#7b68ee",
     apiModel: "gpt",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-        <rect width="24" height="24" rx="6" fill="#1a1a28" />
-        <path d="M7 12h10M12 7v10" stroke="#7b68ee" strokeWidth="1.5" strokeLinecap="round" />
-        <circle cx="12" cy="12" r="5" stroke="#7b68ee" strokeWidth="1.5" />
-      </svg>
-    ),
+    Logo: QQAILogo,
   },
   {
     id: "gpt-4o",
     name: "GPT-4o",
     desc: "General",
-    color: "#22c55e",
+    color: "#10a37f",
     apiModel: "gpt",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-        <rect width="24" height="24" rx="6" fill="#1a1a28" />
-        <circle cx="12" cy="8" r="3" fill="#10a37f" />
-        <path d="M8 18c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="#10a37f" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    ),
+    Logo: GPTLogo,
   },
   {
     id: "gemini-pro",
@@ -50,12 +74,7 @@ const models = [
     desc: "Research",
     color: "#4285f4",
     apiModel: "gemini",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-        <rect width="24" height="24" rx="6" fill="#1a1a28" />
-        <path d="M12 4l-2 6H4l5 4-2 6 5-4 5 4-2-6 5-4h-6z" fill="#4285f4" />
-      </svg>
-    ),
+    Logo: GeminiLogo,
   },
   {
     id: "gpt-4o-mini",
@@ -63,26 +82,15 @@ const models = [
     desc: "Fast",
     color: "#38bdf8",
     apiModel: "gpt",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-        <rect width="24" height="24" rx="6" fill="#1a1a28" />
-        <path d="M6 14l6-6 6 6" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx="12" cy="14" r="3" stroke="#38bdf8" strokeWidth="1.5" />
-      </svg>
-    ),
+    Logo: GPTLogo, // Use gpt.png
   },
   {
     id: "claude-6",
     name: "Claude 4.6",
     desc: "Math",
-    color: "#f59e0b",
+    color: "#D4A574",
     apiModel: "claude",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-        <rect width="24" height="24" rx="6" fill="#1a1a28" />
-        <path d="M13 3l-1.5 9L18 9l-7 12 1.5-9L6 15z" fill="#f59e0b" />
-      </svg>
-    ),
+    Logo: ClaudeLogo,
   },
 ];
 
@@ -181,6 +189,7 @@ export default function ModelSelector({ size = "sm", value, onChange, direction 
         >
           {models.map((m) => {
             const isActive = m.id === selected.id;
+            const LogoComponent = m.Logo;
             return (
               <button
                 key={m.id}
@@ -208,7 +217,7 @@ export default function ModelSelector({ size = "sm", value, onChange, direction 
                   if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
                 }}
               >
-                {m.icon}
+                <LogoComponent size={28} />
                 <div style={{ flex: 1, textAlign: "left" }}>
                   <p style={{ color: "#ffffff", fontSize: "14px", fontWeight: 600, margin: 0 }}>{m.name}</p>
                   <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "11px", margin: 0 }}>{m.desc}</p>

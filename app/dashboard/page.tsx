@@ -239,16 +239,59 @@ export default function DashboardPage() {
         .subject-pill:hover { border-color: rgba(79,70,229,0.4) !important; color: #ffffff !important; }
         .composer-row { display: flex; align-items: flex-end; gap: 8px; padding: 4px 6px; }
         .composer-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
-        @media (max-width: 900px) {
-          .chat-input-area { padding: 10px; }
-          .composer-row { flex-wrap: wrap; }
-          .composer-row textarea { flex-basis: 100%; width: 100%; }
+        .dashboard-hero {
+          padding: 100px 40px 60px;
+        }
+        .dashboard-hero-chatting {
+          padding: 30px 40px 20px;
+        }
+        .dashboard-hero h1 {
+          font-size: 36px;
+        }
+        .chat-messages-area {
+          max-height: 55vh;
+        }
+        .chat-bubble {
+          max-width: 75%;
+        }
+        @media (max-width: 768px) {
+          .dashboard-hero {
+            padding: 40px 16px 30px !important;
+          }
+          .dashboard-hero-chatting {
+            padding: 16px 16px 12px !important;
+          }
+          .dashboard-hero h1 {
+            font-size: 24px !important;
+          }
+          .chat-input-area { padding: 6px !important; }
+          .composer-row { flex-wrap: wrap; gap: 6px !important; }
+          .composer-row textarea { flex-basis: 100%; width: 100%; font-size: 13px !important; }
           .composer-actions { width: 100%; justify-content: space-between; }
+          .chat-messages-area {
+            max-height: 50vh !important;
+            padding: 10px 2px !important;
+          }
+          .chat-bubble {
+            max-width: 85% !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .dashboard-hero {
+            padding: 24px 12px 20px !important;
+          }
+          .dashboard-hero h1 {
+            font-size: 20px !important;
+          }
+          .chat-bubble {
+            max-width: 92% !important;
+          }
         }
       `}</style>
 
       {/* ===== HERO: Chat Home ===== */}
       <section
+        className={hasChat ? "dashboard-hero dashboard-hero-chatting" : "dashboard-hero"}
         style={{
           display: "flex",
           flexDirection: "column",
@@ -282,6 +325,7 @@ export default function DashboardPage() {
         {/* ===== CHAT MESSAGES AREA ===== */}
         {hasChat && (
           <div
+            className="chat-messages-area"
             style={{
               width: "100%",
               maxWidth: "720px",
@@ -330,6 +374,7 @@ export default function DashboardPage() {
                 )}
 
                 <div
+                  className="chat-bubble"
                   style={{
                     maxWidth: "75%",
                     display: "flex",

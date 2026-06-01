@@ -42,9 +42,9 @@ export default function HistoryPage() {
   const historyItems = data?.data || [];
 
   return (
-    <div style={{ padding: "32px 40px", maxWidth: "800px", margin: "0" }}>
+    <div style={{ padding: "32px clamp(16px, 4vw, 40px)", maxWidth: "800px", margin: "0" }}>
       {/* Header */}
-      <h1 style={{ color: "#ffffff", fontSize: "26px", fontWeight: 700, margin: "0 0 28px" }}>
+      <h1 style={{ color: "#ffffff", fontSize: "clamp(20px, 4vw, 26px)", fontWeight: 700, margin: "0 0 28px" }}>
         Chat History
       </h1>
 

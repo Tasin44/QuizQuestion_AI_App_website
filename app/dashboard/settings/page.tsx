@@ -235,9 +235,31 @@ export default function SettingsPage() {
 
   return (
     <div style={{ backgroundColor: "#0A0A0F", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <style>{`
+        .settings-body {
+          flex: 1;
+          padding: 32px 36px;
+        }
+        .settings-grid {
+          display: grid;
+          grid-template-columns: 360px 1fr;
+          gap: 24px;
+          align-items: flex-start;
+        }
+        @media (max-width: 900px) {
+          .settings-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        @media (max-width: 640px) {
+          .settings-body {
+            padding: 20px 14px !important;
+          }
+        }
+      `}</style>
 
       {/* Page Body */}
-      <div style={{ flex: 1, padding: "32px 36px" }}>
+      <div className="settings-body">
 
         {/* Logo */}
         <div style={{ marginBottom: "28px" }}>
@@ -245,7 +267,7 @@ export default function SettingsPage() {
         </div>
 
         {/* 2 Column Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "360px 1fr", gap: "24px", alignItems: "flex-start" }}>
+        <div className="settings-grid">
 
           {/* ===== LEFT ===== */}
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>

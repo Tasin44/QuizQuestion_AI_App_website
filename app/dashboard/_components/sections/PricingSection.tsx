@@ -11,17 +11,30 @@ const plans = [
 ];
 export default function PricingSection() {
   return (
-    <section id="pricing" style={{ padding: "80px 40px", textAlign: "center", maxWidth: "900px", margin: "0 auto" }}>
-      <h2 style={{ color: "#ffffff", fontSize: "34px", fontWeight: 700, margin: "0 0 50px" }}>Start for free. Upgrade anytime.</h2>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px" }}>
+    <section id="pricing" style={{ padding: "80px 20px", textAlign: "center", maxWidth: "900px", margin: "0 auto" }}>
+      <style>{`
+        .pricing-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 24px;
+        }
+        @media (max-width: 640px) {
+          .pricing-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+          }
+        }
+      `}</style>
+      <h2 style={{ color: "#ffffff", fontSize: "clamp(22px, 5vw, 34px)", fontWeight: 700, margin: "0 0 50px" }}>Start for free. Upgrade anytime.</h2>
+      <div className="pricing-grid">
         {plans.map((p) => (
-          <div key={p.name} style={{ backgroundColor: "#111118", borderRadius: "16px", border: p.popular ? "1px solid rgba(79,70,229,0.4)" : "1px solid rgba(255,255,255,0.06)", padding: "36px 28px", textAlign: "left", position: "relative", transition: "all 0.3s ease" }}
+          <div key={p.name} style={{ backgroundColor: "#111118", borderRadius: "16px", border: p.popular ? "1px solid rgba(79,70,229,0.4)" : "1px solid rgba(255,255,255,0.06)", padding: "36px 24px", textAlign: "left", position: "relative", transition: "all 0.3s ease" }}
             onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
             {p.popular && <div style={{ position: "absolute", top: "-12px", right: "24px", backgroundColor: "#4F46E5", color: "#fff", fontSize: "11px", fontWeight: 600, padding: "4px 14px", borderRadius: "20px" }}>Popular</div>}
             <h3 style={{ color: "rgba(255,255,255,0.5)", fontSize: "15px", fontWeight: 600, margin: "0 0 6px" }}>{p.name}</h3>
             <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "28px" }}>
-              <span style={{ color: "#ffffff", fontSize: "40px", fontWeight: 700 }}>{p.price}</span>
+              <span style={{ color: "#ffffff", fontSize: "clamp(30px, 6vw, 40px)", fontWeight: 700 }}>{p.price}</span>
               <span style={{ color: "rgba(255,255,255,0.35)", fontSize: "14px" }}>{p.period}</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "32px" }}>

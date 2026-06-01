@@ -6,9 +6,26 @@ const cards = [
 ];
 export default function RevolutionSection() {
   return (
-    <section style={{ padding: "80px 40px", textAlign: "center", maxWidth: "1200px", margin: "0 auto" }}>
-      <h2 style={{ color: "#ffffff", fontSize: "34px", fontWeight: 700, margin: "0 0 50px" }}>Embrace the AI revolution</h2>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+    <section style={{ padding: "80px 20px", textAlign: "center", maxWidth: "1200px", margin: "0 auto" }}>
+      <style>{`
+        .revolution-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 20px;
+        }
+        @media (max-width: 900px) {
+          .revolution-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+        @media (max-width: 600px) {
+          .revolution-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+      <h2 style={{ color: "#ffffff", fontSize: "clamp(22px, 5vw, 34px)", fontWeight: 700, margin: "0 0 50px" }}>Embrace the AI revolution</h2>
+      <div className="revolution-grid">
         {cards.map((c) => (
           <div key={c.title} style={{ background: c.gradient, borderRadius: "16px", border: "1px solid rgba(255,255,255,0.08)", padding: "28px", textAlign: "left", transition: "all 0.3s ease", cursor: "default", overflow: "hidden", position: "relative" }}
             onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; }}

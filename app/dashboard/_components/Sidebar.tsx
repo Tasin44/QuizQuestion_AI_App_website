@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 
 interface SidebarProps {
   onLogout: () => void;
+  onNavClick?: () => void;
 }
 
 const navItems = [
@@ -64,7 +65,7 @@ const navItems = [
   },
 ];
 
-export default function Sidebar({ onLogout }: SidebarProps) {
+export default function Sidebar({ onLogout, onNavClick }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -101,6 +102,7 @@ export default function Sidebar({ onLogout }: SidebarProps) {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavClick}
               style={{
                 display: "flex",
                 alignItems: "center",
