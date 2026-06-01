@@ -1,10 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   getProfile, 
   updateProfileFormData, 
-  type ChatAskModel,
   createParentalRelation, 
   getChildScans, 
   getChildChats, 
@@ -15,9 +15,11 @@ import { getAccessToken } from "@/app/(auth)/_lib/authStorage";
 import ModelSelector from "../_components/ModelSelector";
 
 const aiModels = [
-  { id: "gpt-4o", name: "GPT-4o", badge: "OpenAI", badgeColor: "#22c55e", desc: "Best for complex reasoning & long answers", icon: "🤖" },
-  { id: "gemini", name: "Gemini Pro", badge: "Google", badgeColor: "#4285f4", desc: "Excellent for math, code, and multimodal tasks", icon: "💎" },
-  { id: "claude", name: "Claude 3.5", badge: "Anthropic", badgeColor: "#f59e0b", desc: "Great for writing, analysis & nuanced content", icon: "⚡" },
+  { id: "auto", name: "Auto", badge: "Smart", badgeColor: "#22c55e", desc: "Automatically picks the best model for your question", image: "/images/ai-logo.png" },
+  { id: "qq-ai", name: "QQ AI", badge: "Quick", badgeColor: "#7b68ee", desc: "Fast & accurate answers powered by Quiz Question AI", image: "/images/ai-logo.png" },
+  { id: "gpt-4o", name: "GPT-4o", badge: "OpenAI", badgeColor: "#22c55e", desc: "Best for complex reasoning & long answers", image: "/images/gpt.png" },
+  { id: "gemini", name: "Gemini Pro", badge: "Google", badgeColor: "#4285f4", desc: "Excellent for math, code, and multimodal tasks", image: "/images/gemini.png" },
+  { id: "claude", name: "Claude 4.6", badge: "Anthropic", badgeColor: "#f59e0b", desc: "Great for writing, analysis & nuanced content", image: "/images/claude.png" },
 ];
 
 const responseStyles = [
@@ -94,9 +96,47 @@ function Toggle({ active, onClick }: ToggleProps) {
 
 export default function SettingsPage() {
   const [selectedModel, setSelectedModel] = useState("gpt-4o");
+  const [askModel, setAskModel] = useState("gpt-4o");
   const [responseStyle, setResponseStyle] = useState("balanced");
   const [difficulty, setDifficulty] = useState(50);
   const [selectedSubjects, setSelectedSubjects] = useState(["mathematics", "physics"]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const timer = setTimeout(() => {
+        const savedModel = localStorage.getItem("preferred_model");
+        if (savedModel) {
+          setSelectedModel(savedModel);
+          setAskModel(savedModel);
+        }
+
+        const savedStyle = localStorage.getItem("response_style");
+        if (savedStyle) setResponseStyle(savedStyle);
+
+        const savedDiff = localStorage.getItem("difficulty_level");
+        if (savedDiff) setDifficulty(Number(savedDiff));
+
+        const savedSubjects = localStorage.getItem("selected_subjects");
+        if (savedSubjects) {
+          try {
+            setSelectedSubjects(JSON.parse(savedSubjects));
+          } catch {}
+        }
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleSavePreferences = () => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("preferred_model", selectedModel);
+      localStorage.setItem("response_style", responseStyle);
+      localStorage.setItem("difficulty_level", String(difficulty));
+      localStorage.setItem("selected_subjects", JSON.stringify(selectedSubjects));
+      toast.success("Preferences saved successfully!");
+    }
+  };
+
   const [parentalRole, setParentalRole] = useState("parent");
   const [chatHistoryExport, setChatHistoryExport] = useState(true);
   const [profileName, setProfileName] = useState("");
@@ -107,7 +147,6 @@ export default function SettingsPage() {
   const [profileBirthDate, setProfileBirthDate] = useState("");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileError, setProfileError] = useState("");
-  const [profileSuccess, setProfileSuccess] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteSuccess, setInviteSuccess] = useState("");
   const [inviteError, setInviteError] = useState("");
@@ -119,7 +158,6 @@ export default function SettingsPage() {
   const [isLoadingActivity, setIsLoadingActivity] = useState(false);
   const [activityError, setActivityError] = useState("");
 
-  const [askModel, setAskModel] = useState<ChatAskModel>("gpt");
   const queryClient = useQueryClient();
 
   const profileQuery = useQuery({
@@ -129,6 +167,20 @@ export default function SettingsPage() {
   });
 
   const profileData = profileQuery.data?.data;
+
+  // Sync profile data to local state for inputs when data resolves
+  useEffect(() => {
+    if (profileData) {
+      const timer = setTimeout(() => {
+        setProfileName(profileData.name || "");
+        setProfileEmail(profileData.email || "");
+        setProfileImageUrl(profileData.image_url || "");
+        setProfileDescription(profileData.description || "");
+        setProfileBirthDate(profileData.birth_date ? profileData.birth_date.slice(0, 10) : "");
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [profileData]);
 
   const isParent = !!profileData?.is_parent;
 
@@ -185,26 +237,23 @@ export default function SettingsPage() {
       setProfileDescription(data.data.description || "");
       setProfileBirthDate((data.data.birth_date || "").slice(0, 10));
       setProfileImageFile(null);
-      setProfileSuccess("Profile updated successfully.");
+      toast.success("Profile updated successfully.");
       setProfileError("");
       setIsEditingProfile(false);
       queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
     onError: (err: Error) => {
       setProfileError(err?.message || "Profile update failed.");
-      setProfileSuccess("");
     },
   });
 
   const handleProfileUpdate = () => {
     setProfileError("");
-    setProfileSuccess("");
     updateProfileMutation.mutate();
   };
 
   const handleToggleEditProfile = () => {
     setProfileError("");
-    setProfileSuccess("");
 
     if (!isEditingProfile) {
       setProfileName(profileData?.name || "");
@@ -373,9 +422,6 @@ export default function SettingsPage() {
                 {profileError && (
                   <p style={{ color: "#ff6b6b", fontSize: "12px", margin: 0 }}>{profileError}</p>
                 )}
-                {profileSuccess && (
-                  <p style={{ color: "#22c55e", fontSize: "12px", margin: 0 }}>{profileSuccess}</p>
-                )}
                 <button
                   onClick={handleProfileUpdate}
                   disabled={!isEditingProfile || updateProfileMutation.isPending}
@@ -430,7 +476,17 @@ export default function SettingsPage() {
             <div style={cardStyle}>
               <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 14px" }}>Ask AI</h2>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
-                <ModelSelector size="sm" value={askModel} onChange={setAskModel} />
+                <ModelSelector
+                  size="sm"
+                  value={askModel}
+                  onChange={(val) => {
+                    setAskModel(val);
+                    setSelectedModel(val);
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem("preferred_model", val);
+                    }
+                  }}
+                />
               </div>
               {/* Input removed per request: settings page no longer shows Ask input or Send button */}
               {/* Ask response hidden on settings page */}
@@ -447,7 +503,13 @@ export default function SettingsPage() {
                   return (
                     <div
                       key={m.id}
-                      onClick={() => setSelectedModel(m.id)}
+                      onClick={() => {
+                        setSelectedModel(m.id);
+                        setAskModel(m.id);
+                        if (typeof window !== "undefined") {
+                          localStorage.setItem("preferred_model", m.id);
+                        }
+                      }}
                       style={{
                         display: "flex", alignItems: "center", gap: "12px",
                         padding: "12px 16px",
@@ -456,7 +518,9 @@ export default function SettingsPage() {
                         borderRadius: "12px", cursor: "pointer", transition: "all 0.2s ease",
                       }}
                     >
-                      <span style={{ fontSize: "18px" }}>{m.icon}</span>
+                      <div style={{ width: "32px", height: "32px", borderRadius: "8px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1a1a28", flexShrink: 0 }}>
+                        <img src={m.image} alt={m.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                      </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
                           <span style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{m.name}</span>
@@ -554,13 +618,17 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <button style={{
-                width: "100%", padding: "13px",
-                background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
-                border: "none", borderRadius: "10px", color: "#fff",
-                fontSize: "13px", fontWeight: 600, cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
-              }}>
+              <button
+                onClick={handleSavePreferences}
+                style={{
+                  width: "100%", padding: "13px",
+                  background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
+                  border: "none", borderRadius: "10px", color: "#fff",
+                  fontSize: "13px", fontWeight: 600, cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+                  marginBottom: "0px",
+                }}
+              >
                 ✨ Save Preferences
               </button>
             </div>

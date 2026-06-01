@@ -10,6 +10,7 @@ import DevicesSection from "./_components/sections/DevicesSection";
 import ModelSelector from "./_components/ModelSelector";
 import { useMutation } from "@tanstack/react-query";
 import { askChatFormData, type ChatAskModel } from "@/app/(auth)/_lib/api";
+import { Bot, User, ImagePlus, Paperclip, SendHorizonal, Calculator } from "lucide-react";
 
 /* ───── Types ───── */
 interface ChatMessage {
@@ -59,7 +60,6 @@ function TypingIndicator() {
 
 function renderInlineMarkdown(text: string) {
   if (!text) return "";
-
   const codeParts = text.split(/(`[^`]+`)/g);
   return codeParts.map((part, partIdx) => {
     if (part.startsWith("`") && part.endsWith("`")) {
@@ -79,20 +79,23 @@ function renderInlineMarkdown(text: string) {
         </code>
       );
     }
-
-    return part;
+    const starParts = part.split(/(\*\*\*.*?\*\*\*|\*\*.*?\*\*|\*.*?\*)/g);
+    return starParts.map((sub, subIdx) => {
+      if (sub.startsWith("***") && sub.endsWith("***")) return <strong key={subIdx} style={{ fontWeight: 700, fontStyle: "italic", color: "#fff" }}>{sub.slice(3, -3)}</strong>;
+      if (sub.startsWith("**") && sub.endsWith("**")) return <strong key={subIdx} style={{ fontWeight: 700, color: "#fff" }}>{sub.slice(2, -2)}</strong>;
+      if (sub.startsWith("*") && sub.endsWith("*")) return <em key={subIdx} style={{ fontStyle: "italic" }}>{sub.slice(1, -1)}</em>;
+      return sub;
+    });
   });
 }
 
 function renderMessageContent(content: string) {
   if (!content) return null;
-
   const parts = content.split(/(```[\s\S]*?```)/g);
   return parts.map((part, index) => {
     if (part.startsWith("```") && part.endsWith("```")) {
       const match = part.match(/```(\w*)\n([\s\S]*?)```/);
       const code = match ? match[2] : part.slice(3, -3);
-
       return (
         <pre
           key={index}
@@ -112,14 +115,48 @@ function renderMessageContent(content: string) {
         </pre>
       );
     }
-
-    return <p key={index} style={{ margin: "4px 0", lineHeight: 1.6, color: "inherit" }}>{renderInlineMarkdown(part)}</p>;
+    const lines = part.split("\n");
+    return (
+      <div key={index}>
+        {lines.map((line, lineIdx) => {
+          const bulletMatch = line.match(/^(\s*)[-*+•]\s+(.*)/);
+          if (bulletMatch) {
+            const indent = bulletMatch[1].length * 12;
+            return <div key={lineIdx} style={{ display: "flex", gap: "6px", paddingLeft: `${indent + 8}px`, margin: "4px 0", color: "inherit" }}><span>•</span><span>{renderInlineMarkdown(bulletMatch[2])}</span></div>;
+          }
+          const numberMatch = line.match(/^(\s*)\d+\.\s+(.*)/);
+          if (numberMatch) {
+            const indent = numberMatch[1].length * 12;
+            const num = line.match(/^\s*(\d+)\./)?.[1] || "1";
+            return <div key={lineIdx} style={{ display: "flex", gap: "6px", paddingLeft: `${indent + 8}px`, margin: "4px 0", color: "inherit" }}><span>{num}.</span><span>{renderInlineMarkdown(numberMatch[2])}</span></div>;
+          }
+          if (line.startsWith("### ")) return <h4 key={lineIdx} style={{ fontSize: "15px", fontWeight: 700, margin: "12px 0 6px", color: "#fff" }}>{renderInlineMarkdown(line.slice(4))}</h4>;
+          if (line.startsWith("## ")) return <h3 key={lineIdx} style={{ fontSize: "17px", fontWeight: 700, margin: "16px 0 8px", color: "#fff" }}>{renderInlineMarkdown(line.slice(3))}</h3>;
+          if (line.startsWith("# ")) return <h2 key={lineIdx} style={{ fontSize: "19px", fontWeight: 700, margin: "20px 0 10px", color: "#fff" }}>{renderInlineMarkdown(line.slice(2))}</h2>;
+          return <p key={lineIdx} style={{ margin: line.trim() === "" ? "8px 0" : "4px 0", minHeight: line.trim() === "" ? "8px" : "auto", lineHeight: "1.6", color: "inherit" }}>{renderInlineMarkdown(line)}</p>;
+        })}
+      </div>
+    );
   });
 }
 
 export default function DashboardPage() {
   const [message, setMessage] = useState("");
-  const [model, setModel] = useState<ChatAskModel>("gpt");
+  const [model, setModel] = useState("gpt-4o");
+
+  // Load preferred model from localStorage on mount safely
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const timer = setTimeout(() => {
+        const savedModel = localStorage.getItem("preferred_model");
+        if (savedModel) {
+          setModel(savedModel);
+        }
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [docFile, setDocFile] = useState<File | null>(null);
@@ -148,13 +185,17 @@ export default function DashboardPage() {
 
   /* ───── Mutation ───── */
   const askMutation = useMutation({
-    mutationFn: (params: { msg: string; mdl: ChatAskModel; img?: File; doc?: File }) =>
-      askChatFormData({
+    mutationFn: (params: { msg: string; mdl: string; img?: File; doc?: File }) => {
+      let apiModel: ChatAskModel = "gpt";
+      if (params.mdl === "gemini-pro" || params.mdl === "gemini") apiModel = "gemini";
+      else if (params.mdl === "claude-6" || params.mdl === "claude") apiModel = "claude";
+      return askChatFormData({
         message: params.msg,
-        model: params.mdl,
+        model: apiModel,
         image: params.img,
         file: params.doc,
-      }),
+      });
+    },
     onSuccess: (data) => {
       const aiMsg: ChatMessage = {
         id: crypto.randomUUID(),
@@ -328,14 +369,14 @@ export default function DashboardPage() {
             className="chat-messages-area"
             style={{
               width: "100%",
-              maxWidth: "720px",
+              maxWidth: "780px",
               maxHeight: "55vh",
               overflowY: "auto",
               marginBottom: "20px",
               display: "flex",
               flexDirection: "column",
-              gap: "16px",
-              padding: "16px 4px",
+              gap: "20px",
+              padding: "20px 8px",
               scrollbarWidth: "thin",
               scrollbarColor: "rgba(255,255,255,0.08) transparent",
             }}
@@ -355,21 +396,19 @@ export default function DashboardPage() {
                 {msg.role === "assistant" && (
                   <div
                     style={{
-                      width: "34px",
-                      height: "34px",
-                      borderRadius: "50%",
+                      width: "38px",
+                      height: "38px",
+                      borderRadius: "12px",
                       background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: "11px",
-                      fontWeight: 700,
                       color: "#fff",
                       flexShrink: 0,
-                      boxShadow: "0 2px 12px rgba(108,92,231,0.3)",
+                      boxShadow: "0 3px 14px rgba(108,92,231,0.35)",
                     }}
                   >
-                    {MODEL_LABELS[msg.model]?.[0] || "AI"}
+                    <Bot size={20} strokeWidth={2} />
                   </div>
                 )}
 
@@ -421,21 +460,21 @@ export default function DashboardPage() {
                   {/* Message bubble */}
                   <div
                     style={{
-                      padding: "12px 16px",
-                      borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-                      backgroundColor: msg.role === "user" ? "#4F46E5" : "#1a1a28",
-                      border: msg.role === "assistant" ? "1px solid rgba(255,255,255,0.06)" : "none",
+                      padding: "14px 18px",
+                      borderRadius: msg.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+                      backgroundColor: msg.role === "user" ? "#4F46E5" : "#15151f",
+                      border: msg.role === "assistant" ? "1px solid rgba(255,255,255,0.07)" : "none",
                       boxShadow: msg.role === "user"
-                        ? "0 2px 12px rgba(79,70,229,0.25)"
-                        : "0 1px 4px rgba(0,0,0,0.2)",
+                        ? "0 3px 16px rgba(79,70,229,0.3)"
+                        : "0 2px 8px rgba(0,0,0,0.25)",
                     }}
                   >
                     <div
                       style={{
-                        color: msg.role === "user" ? "#ffffff" : "rgba(255,255,255,0.8)",
-                        fontSize: "14px",
+                        color: msg.role === "user" ? "#ffffff" : "rgba(255,255,255,0.85)",
+                        fontSize: "14.5px",
                         margin: 0,
-                        lineHeight: 1.65,
+                        lineHeight: 1.7,
                         wordBreak: "break-word",
                         textAlign: "left",
                       }}
@@ -460,20 +499,19 @@ export default function DashboardPage() {
                 {msg.role === "user" && (
                   <div
                     style={{
-                      width: "34px",
-                      height: "34px",
-                      borderRadius: "50%",
+                      width: "38px",
+                      height: "38px",
+                      borderRadius: "12px",
                       background: "linear-gradient(135deg, #f59e0b, #ef4444)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: "13px",
-                      fontWeight: 700,
                       color: "#fff",
                       flexShrink: 0,
+                      boxShadow: "0 3px 14px rgba(245,158,11,0.3)",
                     }}
                   >
-                    U
+                    <User size={20} strokeWidth={2} />
                   </div>
                 )}
               </div>
@@ -723,7 +761,17 @@ export default function DashboardPage() {
               </Link>
 
               <div style={{ flexShrink: 0, paddingBottom: "1px" }}>
-                <ModelSelector size="sm" value={model} onChange={setModel} direction="down" />
+                <ModelSelector
+                  size="sm"
+                  value={model}
+                  onChange={(val) => {
+                    setModel(val);
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem("preferred_model", val);
+                    }
+                  }}
+                  direction="down"
+                />
               </div>
             </div>
 

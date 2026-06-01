@@ -331,7 +331,17 @@ export default function ResourceCategoryPage() {
   const resources = sampleResourcesByCategory[categoryParam] || sampleResourcesByCategory.math;
 
   return (
-    <div style={{ padding: "28px 32px" }}>
+    <div className="resources-page-container">
+      <style>{`
+        .resources-page-container {
+          padding: 28px 32px;
+        }
+        @media (max-width: 768px) {
+          .resources-page-container {
+            padding: 20px 16px;
+          }
+        }
+      `}</style>
       <h2 style={{ color: "#ffffff", fontSize: "24px", fontWeight: 700, margin: "0 0 28px" }}>
         {title} - Equation
       </h2>

@@ -19,16 +19,84 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
 
   return (
-    <div style={{ display: "flex", minHeight: "100%" }}>
+    <div className="resources-container">
+      <style>{`
+        .resources-container {
+          display: flex;
+          flex-direction: row;
+          min-height: 100vh;
+        }
+        .resources-sidebar {
+          width: 200px;
+          border-right: 1px solid rgba(255,255,255,0.06);
+          padding: 20px 0;
+          flex-shrink: 0;
+          display: flex;
+          flex-direction: column;
+        }
+        .resources-link {
+          display: block;
+          width: 100%;
+          padding: 12px 24px;
+          border-left: 3px solid transparent;
+          font-size: 14px;
+          text-align: left;
+          text-decoration: none;
+          transition: all 0.2s ease;
+        }
+        .resources-link-active {
+          background: rgba(79,70,229,0.12);
+          border-left: 3px solid #4F46E5;
+          color: #ffffff;
+          font-weight: 600;
+        }
+        .resources-link-inactive {
+          color: rgba(255,255,255,0.5);
+          font-weight: 400;
+        }
+        .resources-content {
+          flex: 1;
+        }
+
+        @media (max-width: 768px) {
+          .resources-container {
+            flex-direction: column;
+            min-height: auto;
+          }
+          .resources-sidebar {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 10px 16px;
+            flex-direction: row;
+            overflow-x: auto;
+            white-space: nowrap;
+            gap: 8px;
+            scrollbar-width: none; /* Hide scrollbar Firefox */
+          }
+          .resources-sidebar::-webkit-scrollbar {
+            display: none; /* Hide scrollbar Chrome/Safari */
+          }
+          .resources-link {
+            display: inline-block;
+            width: auto;
+            padding: 8px 16px;
+            border-left: none;
+            border-radius: 20px;
+            font-size: 13px;
+            text-align: center;
+          }
+          .resources-link-active {
+            background: rgba(79,70,229,0.15) !important;
+            border-left: none !important;
+            color: #7b68ee !important;
+            font-weight: 600;
+          }
+        }
+      `}</style>
+
       {/* Category Sidebar */}
-      <div
-        style={{
-          width: "200px",
-          borderRight: "1px solid rgba(255,255,255,0.06)",
-          padding: "20px 0",
-          flexShrink: 0,
-        }}
-      >
+      <div className="resources-sidebar">
         {categories.map((cat) => {
           const catPath = `/dashboard/resources/${cat.path}`;
           // Make "math" active if we are on the base page
@@ -37,27 +105,14 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
             <Link
               key={cat.path}
               href={catPath}
-              style={{
-                display: "block",
-                width: "100%",
-                padding: "12px 24px",
-                background: isActive ? "rgba(79,70,229,0.12)" : "transparent",
-                borderLeft: isActive ? "3px solid #4F46E5" : "3px solid transparent",
-                color: isActive ? "#ffffff" : "rgba(255,255,255,0.5)",
-                fontSize: "14px",
-                fontWeight: isActive ? 600 : 400,
-                cursor: "pointer",
-                textAlign: "left",
-                textDecoration: "none",
-                transition: "all 0.2s ease",
-              }}
+              className={`resources-link ${isActive ? "resources-link-active" : "resources-link-inactive"}`}
             >
               {cat.name}
             </Link>
           );
         })}
       </div>
-      <div style={{ flex: 1 }}>{children}</div>
+      <div className="resources-content">{children}</div>
     </div>
   );
 }

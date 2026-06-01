@@ -251,7 +251,20 @@ export default function ChatDetailPage() {
     queryFn: getChatHistory,
   });
 
-  const [model, setModel] = useState<ChatAskModel>("gpt");
+  const [model, setModel] = useState("gpt-4o");
+
+  // Load preferred model from localStorage on mount safely
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const timer = setTimeout(() => {
+        const savedModel = localStorage.getItem("preferred_model");
+        if (savedModel) {
+          setModel(savedModel);
+        }
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, []);
   const [message, setMessage] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [docFile, setDocFile] = useState<File | null>(null);
@@ -309,13 +322,17 @@ export default function ChatDetailPage() {
   }, [message]);
 
   const askMutation = useMutation({
-    mutationFn: (params: { msg: string; mdl: ChatAskModel; img?: File; doc?: File }) =>
-      askChatFormData({
+    mutationFn: (params: { msg: string; mdl: string; img?: File; doc?: File }) => {
+      let apiModel: ChatAskModel = "gpt";
+      if (params.mdl === "gemini-pro" || params.mdl === "gemini") apiModel = "gemini";
+      else if (params.mdl === "claude-6" || params.mdl === "claude") apiModel = "claude";
+      return askChatFormData({
         message: params.msg,
-        model: params.mdl,
+        model: apiModel,
         image: params.img,
         file: params.doc,
-      }),
+      });
+    },
     onSuccess: (data) => {
       const aiMsg: ChatMessage = {
         id: crypto.randomUUID(),
@@ -801,7 +818,17 @@ export default function ChatDetailPage() {
 
             {/* Model Selector inside input field on the right side */}
             <div style={{ flexShrink: 0, alignSelf: "flex-end", paddingBottom: "1px" }}>
-              <ModelSelector size="sm" value={model} onChange={setModel} direction="up" />
+              <ModelSelector
+                size="sm"
+                value={model}
+                onChange={(val) => {
+                  setModel(val);
+                  if (typeof window !== "undefined") {
+                    localStorage.setItem("preferred_model", val);
+                  }
+                }}
+                direction="up"
+              />
             </div>
 
             {/* Send button (animates and displays only when input is typed or file uploaded) */}

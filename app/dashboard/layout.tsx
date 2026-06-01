@@ -4,6 +4,8 @@ import Sidebar from "./_components/Sidebar";
 import TopNavbar from "./_components/TopNavbar";
 import LogoutModal from "./_components/LogoutModal";
 import Footer from "@/app/(dashboard)/_components/sections/Footer";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function DashboardLayout({
   children,
@@ -125,6 +127,18 @@ export default function DashboardLayout({
       {showLogoutModal && (
         <LogoutModal onClose={() => setShowLogoutModal(false)} />
       )}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
       <style>{`
         @keyframes slideInLeft {
           from { transform: translateX(-100%); }

@@ -3,22 +3,88 @@
 export default function AppPage() {
   return (
     <div style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
+      <style>{`
+        .app-container {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 40px 20px;
+        }
+        .app-section {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 60px;
+          position: relative;
+          overflow: hidden;
+          padding: 40px;
+          width: 100%;
+          max-width: 1000px;
+        }
+        .app-left-content {
+          flex: 1;
+          max-width: 460px;
+          position: relative;
+          z-index: 1;
+        }
+        .app-right-content {
+          position: relative;
+          width: 380px;
+          height: 420px;
+          flex-shrink: 0;
+          transition: all 0.3s ease;
+        }
+        .store-buttons-container {
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+        @media (max-width: 860px) {
+          .app-container {
+            padding: 20px 10px;
+          }
+          .app-section {
+            flex-direction: column;
+            gap: 40px;
+            padding: 20px;
+            text-align: center;
+          }
+          .app-left-content {
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+          }
+          .app-left-content h1 {
+            font-size: 28px !important;
+            margin-bottom: 20px !important;
+          }
+          .store-buttons-container {
+            justify-content: center;
+          }
+        }
+        @media (max-width: 480px) {
+          .app-left-content h1 {
+            font-size: 24px !important;
+          }
+          .app-right-content {
+            transform: scale(0.8);
+            margin: -30px 0;
+          }
+        }
+        @media (max-width: 380px) {
+          .app-right-content {
+            transform: scale(0.7);
+            margin: -50px 0;
+          }
+        }
+      `}</style>
+
       {/* Content wrapper to center things */}
-      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
+      <div className="app-container">
         {/* Hero Section Container */}
-        <section
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "50px",
-            position: "relative",
-            overflow: "hidden",
-          
-            padding: "40px",
-           
-          }}
-        >
+        <section className="app-section">
           {/* Purple gradient overlay */}
           <div
             style={{
@@ -33,7 +99,7 @@ export default function AppPage() {
           />
 
           {/* Left Content */}
-          <div style={{ flex: 1, maxWidth: "440px", position: "relative", zIndex: 1 }}>
+          <div className="app-left-content">
             <p
               style={{
                 color: "#7b68ee",
@@ -73,7 +139,7 @@ export default function AppPage() {
               DOWNLOAD APP
             </p>
 
-            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            <div className="store-buttons-container">
               {/* Google Play */}
               <a
                 href="#"
@@ -97,7 +163,7 @@ export default function AppPage() {
                   <path d="M21 12C21 12.68 20.58 13.28 19.94 13.54L17.46 14.78L14.97 12.29L14.54 12L17.03 9.51L19.94 10.98C20.58 11.23 21 11.83 21 12Z" fill="#FBBC04" />
                   <path d="M6.05 2.66L16.81 8.88L14.54 11.15L6.05 2.66Z" fill="#34A853" />
                 </svg>
-                <div>
+                <div style={{ textAlign: "left" }}>
                   <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "8px", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>GET IT ON</p>
                   <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>Google Play</p>
                 </div>
@@ -124,7 +190,7 @@ export default function AppPage() {
                   <path d="M14.94 11.5c-.03-2.79 2.27-4.13 2.38-4.2-1.3-1.9-3.32-2.16-4.04-2.19-1.72-.17-3.36 1.01-4.23 1.01-.87 0-2.22-.99-3.65-.96-1.88.03-3.61 1.09-4.58 2.78-1.95 3.39-.5 8.41 1.4 11.16.93 1.34 2.04 2.86 3.5 2.8 1.4-.06 1.93-.91 3.63-.91 1.69 0 2.18.91 3.66.88 1.51-.03 2.48-1.37 3.4-2.72 1.07-1.56 1.51-3.07 1.54-3.15-.03-.01-2.95-1.13-2.98-4.5h-.03z" />
                   <path d="M12.17 3.54c.77-.94 1.29-2.24 1.15-3.54-1.11.04-2.45.74-3.25 1.67-.71.83-1.34 2.15-1.17 3.42 1.24.1 2.5-.63 3.27-1.55z" />
                 </svg>
-                <div>
+                <div style={{ textAlign: "left" }}>
                   <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "8px", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>Download on the</p>
                   <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>App Store</p>
                 </div>
@@ -133,7 +199,7 @@ export default function AppPage() {
           </div>
 
           {/* Right: Phone Mockups */}
-          <div style={{ position: "relative", width: "380px", height: "420px", flexShrink: 0 }}>
+          <div className="app-right-content">
             {/* Main phone */}
             <div
               style={{

@@ -61,7 +61,7 @@ export default function TopNavbar({ onLogout, onMenuToggle }: TopNavbarProps) {
           backgroundColor: "#0A0A0F",
           position: "sticky",
           top: 0,
-          zIndex: 100,
+          zIndex: 200,
           gap: "12px",
         }}
       >
@@ -135,7 +135,6 @@ export default function TopNavbar({ onLogout, onMenuToggle }: TopNavbarProps) {
               }}
             >
               {imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img src={imageUrl} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : (
                 initials

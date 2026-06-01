@@ -96,19 +96,21 @@ const models = [
 
 interface ModelSelectorProps {
   size?: "sm" | "md";
-  value?: "gpt" | "claude" | "gemini";
-  onChange?: (value: "gpt" | "claude" | "gemini") => void;
+  value?: string;
+  onChange?: (value: string) => void;
   direction?: "up" | "down";
+  height?: string | number;
+  borderRadius?: string | number;
 }
 
-export default function ModelSelector({ size = "sm", value, onChange, direction = "down" }: ModelSelectorProps) {
+export default function ModelSelector({ size = "sm", value, onChange, direction = "down", height, borderRadius }: ModelSelectorProps) {
   const [open, setOpen] = useState(false);
-  const [internalValue, setInternalValue] = useState<"gpt" | "claude" | "gemini">(value ?? models[0].apiModel as "gpt" | "claude" | "gemini");
+  const [internalValue, setInternalValue] = useState<string>(value ?? models[0].id);
   const ref = useRef<HTMLDivElement>(null);
 
   const selectedValue = value ?? internalValue;
   const selected = useMemo(() => {
-    return models.find((m) => m.apiModel === selectedValue) ?? models[0];
+    return models.find((m) => m.id === selectedValue || m.apiModel === selectedValue) ?? models[0];
   }, [selectedValue]);
 
   useEffect(() => {
@@ -134,36 +136,42 @@ export default function ModelSelector({ size = "sm", value, onChange, direction 
         style={{
           display: "inline-flex",
           alignItems: "center",
-          gap: "6px",
-          padding: size === "sm" ? "5px 12px" : "7px 14px",
+          justifyContent: "center",
+          gap: "8px",
+          height: height || (size === "sm" ? "32px" : "40px"),
+          padding: "0 14px",
           backgroundColor: "rgba(255,255,255,0.06)",
           border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: "20px",
+          borderRadius: borderRadius || "20px",
           cursor: "pointer",
           transition: "all 0.2s ease",
+          boxSizing: "border-box",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.12)";
+          e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.06)";
+          e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
         }}
       >
-        <span
-          style={{
-            width: "7px",
-            height: "7px",
-            borderRadius: "50%",
-            backgroundColor: selected.color,
-            display: "inline-block",
-          }}
-        />
-        <span style={{ color: "rgba(255,255,255,0.75)", fontSize: size === "sm" ? "12px" : "13px", fontWeight: 500 }}>
+        <selected.Logo size={16} />
+        <span style={{ color: "#ffffff", fontSize: size === "sm" ? "12px" : "13px", fontWeight: 600 }}>
           {selected.name}
         </span>
         <span
           style={{
-            color: "rgba(255,255,255,0.3)",
+            color: "rgba(255,255,255,0.4)",
             fontSize: "10px",
             transform: open ? "rotate(180deg)" : "rotate(0deg)",
             transition: "transform 0.2s ease",
+            display: "inline-block",
+            lineHeight: 1,
+            marginLeft: "2px",
           }}
         >
-          ˅
+          ▼
         </span>
       </button>
 
@@ -194,9 +202,9 @@ export default function ModelSelector({ size = "sm", value, onChange, direction 
               <button
                 key={m.id}
                 onClick={() => {
-                  setInternalValue(m.apiModel as "gpt" | "claude" | "gemini");
+                  setInternalValue(m.id);
                   setOpen(false);
-                  if (onChange) onChange(m.apiModel as "gpt" | "claude" | "gemini");
+                  if (onChange) onChange(m.id);
                 }}
                 style={{
                   display: "flex",
