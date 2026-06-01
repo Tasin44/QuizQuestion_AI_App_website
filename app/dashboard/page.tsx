@@ -10,7 +10,7 @@ import DevicesSection from "./_components/sections/DevicesSection";
 import ModelSelector from "./_components/ModelSelector";
 import { useMutation } from "@tanstack/react-query";
 import { askChatFormData, type ChatAskModel } from "@/app/(auth)/_lib/api";
-import { Bot, User, ImagePlus, Paperclip, SendHorizonal, Calculator } from "lucide-react";
+import { Bot, User } from "lucide-react";
 
 /* ───── Types ───── */
 interface ChatMessage {

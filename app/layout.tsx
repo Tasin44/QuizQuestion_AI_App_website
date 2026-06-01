@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Quiz Question AI",
   description: "Quiz Question AI",
+  icons: {
+    icon: "/images/ai-logo.png",
+    shortcut: "/images/ai-logo.png",
+    apple: "/images/ai-logo.png",
+  },
 };
 
 export default function RootLayout({

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, useMemo } from "react";
+import { Sparkles } from "lucide-react";
 
 /* ───── Image Logo Components ───── */
 
@@ -37,8 +38,8 @@ function ClaudeLogo({ size = 28 }: { size?: number }) {
 
 function AutoLogo({ size = 28 }: { size?: number }) {
   return (
-    <div style={{ width: size, height: size, borderRadius: "6px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1a1a28", flexShrink: 0 }}>
-      <img src="/images/ai-logo.png" alt="Auto" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+    <div style={{ width: size, height: size, borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #22c55e, #10b981)", flexShrink: 0, boxShadow: "0 2px 8px rgba(34, 197, 94, 0.25)" }}>
+      <Sparkles size={size * 0.55} color="#ffffff" strokeWidth={2.5} />
     </div>
   );
 }

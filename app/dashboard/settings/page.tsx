@@ -13,13 +13,14 @@ import {
 } from "@/app/(auth)/_lib/api";
 import { getAccessToken } from "@/app/(auth)/_lib/authStorage";
 import ModelSelector from "../_components/ModelSelector";
+import { Sparkles } from "lucide-react";
 
 const aiModels = [
   { id: "auto", name: "Auto", badge: "Smart", badgeColor: "#22c55e", desc: "Automatically picks the best model for your question", image: "/images/ai-logo.png" },
   { id: "qq-ai", name: "QQ AI", badge: "Quick", badgeColor: "#7b68ee", desc: "Fast & accurate answers powered by Quiz Question AI", image: "/images/ai-logo.png" },
   { id: "gpt-4o", name: "GPT-4o", badge: "OpenAI", badgeColor: "#22c55e", desc: "Best for complex reasoning & long answers", image: "/images/gpt.png" },
-  { id: "gemini", name: "Gemini Pro", badge: "Google", badgeColor: "#4285f4", desc: "Excellent for math, code, and multimodal tasks", image: "/images/gemini.png" },
-  { id: "claude", name: "Claude 4.6", badge: "Anthropic", badgeColor: "#f59e0b", desc: "Great for writing, analysis & nuanced content", image: "/images/claude.png" },
+  { id: "gemini-pro", name: "Gemini Pro", badge: "Google", badgeColor: "#4285f4", desc: "Excellent for math, code, and multimodal tasks", image: "/images/gemini.png" },
+  { id: "claude-6", name: "Claude 4.6", badge: "Anthropic", badgeColor: "#f59e0b", desc: "Great for writing, analysis & nuanced content", image: "/images/claude.png" },
 ];
 
 const responseStyles = [
@@ -518,8 +519,12 @@ export default function SettingsPage() {
                         borderRadius: "12px", cursor: "pointer", transition: "all 0.2s ease",
                       }}
                     >
-                      <div style={{ width: "32px", height: "32px", borderRadius: "8px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1a1a28", flexShrink: 0 }}>
-                        <img src={m.image} alt={m.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                      <div style={{ width: "32px", height: "32px", borderRadius: "8px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", background: m.id === "auto" ? "linear-gradient(135deg, #22c55e, #10b981)" : "#1a1a28", flexShrink: 0, boxShadow: m.id === "auto" ? "0 2px 8px rgba(34, 197, 94, 0.25)" : "none" }}>
+                        {m.id === "auto" ? (
+                          <Sparkles size={16} color="#ffffff" strokeWidth={2.5} />
+                        ) : (
+                          <img src={m.image} alt={m.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                        )}
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
