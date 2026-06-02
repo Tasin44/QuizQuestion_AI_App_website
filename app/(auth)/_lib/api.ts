@@ -404,3 +404,36 @@ export function getChildChats(): Promise<ChildChatsResponse> {
   });
 }
 
+export type AiPersonalizationItem = {
+  model: string;
+  response_sytel: string;
+  dificulty_level: string;
+  language: string;
+  subject_focus_area: string;
+};
+
+export type AiPersonalizationResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: {
+    items: AiPersonalizationItem[];
+    count: number;
+  };
+  timestamp: string;
+};
+
+export function getAiPersonalization(): Promise<AiPersonalizationResponse> {
+  const token = getStoredAccessToken();
+  return fetch(`${API_BASE_URL}/scan/ai-personalization/`, {
+    method: "GET",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  }).then(async (res) => {
+    const data = await res.json().catch(() => null);
+    if (!res.ok || data?.success === false) {
+      throw new ApiError(data?.message || "Failed to fetch AI personalization", data?.data || null);
+    }
+    return data as AiPersonalizationResponse;
+  });
+}
+

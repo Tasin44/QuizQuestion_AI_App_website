@@ -9,7 +9,7 @@ import PricingSection from "./_components/sections/PricingSection";
 import DevicesSection from "./_components/sections/DevicesSection";
 import ModelSelector from "./_components/ModelSelector";
 import { useMutation } from "@tanstack/react-query";
-import { askChatFormData, type ChatAskModel } from "@/app/(auth)/_lib/api";
+import { askChatFormData, getAiPersonalization, type ChatAskModel } from "@/app/(auth)/_lib/api";
 
 /* ───── Types ───── */
 interface ChatMessage {
@@ -120,6 +120,8 @@ function renderMessageContent(content: string) {
 export default function DashboardPage() {
   const [message, setMessage] = useState("");
   const [model, setModel] = useState<ChatAskModel>("gpt");
+  const [modelId, setModelId] = useState("auto");
+  const [hasManualModel, setHasManualModel] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [docFile, setDocFile] = useState<File | null>(null);
@@ -127,6 +129,40 @@ export default function DashboardPage() {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const mapPersonalizationModel = useCallback((rawModel?: string) => {
+    const normalized = (rawModel || "").toLowerCase();
+    if (normalized === "gemini" || normalized === "gemini-pro") {
+      return { apiModel: "gemini" as ChatAskModel, id: "gemini-pro" };
+    }
+    if (normalized === "claude" || normalized === "claude-4.6") {
+      return { apiModel: "claude" as ChatAskModel, id: "claude-6" };
+    }
+    if (normalized === "qq-ai") {
+      return { apiModel: "gpt" as ChatAskModel, id: "qq-ai" };
+    }
+    if (normalized === "auto") {
+      return { apiModel: "gpt" as ChatAskModel, id: "auto" };
+    }
+    return { apiModel: "gpt" as ChatAskModel, id: "gpt-4o" };
+  }, []);
+
+  useEffect(() => {
+    if (hasManualModel) return;
+    let active = true;
+    getAiPersonalization()
+      .then((res) => {
+        const rawModel = res.data?.items?.[0]?.model;
+        const mapped = mapPersonalizationModel(rawModel);
+        if (!active) return;
+        setModel(mapped.apiModel);
+        setModelId(mapped.id);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [hasManualModel, mapPersonalizationModel]);
 
   /* ───── Auto-scroll to bottom ───── */
   const scrollToBottom = useCallback(() => {
@@ -678,7 +714,20 @@ export default function DashboardPage() {
               </Link>
 
               <div style={{ flexShrink: 0, paddingBottom: "1px" }}>
-                <ModelSelector size="sm" value={model} onChange={setModel} direction="down" />
+                <ModelSelector
+                  size="sm"
+                  value={model}
+                  onChange={(value) => {
+                    setModel(value);
+                    setHasManualModel(true);
+                  }}
+                  selectedId={modelId}
+                  onSelectId={(id) => {
+                    setModelId(id);
+                    setHasManualModel(true);
+                  }}
+                  direction="down"
+                />
               </div>
             </div>
 

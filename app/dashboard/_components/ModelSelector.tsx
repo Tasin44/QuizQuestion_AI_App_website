@@ -5,7 +5,6 @@ const models = [
   {
     id: "auto",
     name: "Auto",
-    desc: "Smart",
     color: "#22c55e",
     apiModel: "gpt",
     icon: (
@@ -19,7 +18,6 @@ const models = [
   {
     id: "qq-ai",
     name: "QQ AI",
-    desc: "Quick",
     color: "#7b68ee",
     apiModel: "gpt",
     icon: (
@@ -33,7 +31,6 @@ const models = [
   {
     id: "gpt-4o",
     name: "GPT-4o",
-    desc: "General",
     color: "#22c55e",
     apiModel: "gpt",
     icon: (
@@ -47,7 +44,6 @@ const models = [
   {
     id: "gemini-pro",
     name: "Gemini Pro",
-    desc: "Research",
     color: "#4285f4",
     apiModel: "gemini",
     icon: (
@@ -58,23 +54,8 @@ const models = [
     ),
   },
   {
-    id: "gpt-4o-mini",
-    name: "GPT-4o Mini",
-    desc: "Fast",
-    color: "#38bdf8",
-    apiModel: "gpt",
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-        <rect width="24" height="24" rx="6" fill="#1a1a28" />
-        <path d="M6 14l6-6 6 6" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx="12" cy="14" r="3" stroke="#38bdf8" strokeWidth="1.5" />
-      </svg>
-    ),
-  },
-  {
     id: "claude-6",
     name: "Claude 4.6",
-    desc: "Math",
     color: "#f59e0b",
     apiModel: "claude",
     icon: (
@@ -90,18 +71,39 @@ interface ModelSelectorProps {
   size?: "sm" | "md";
   value?: "gpt" | "claude" | "gemini";
   onChange?: (value: "gpt" | "claude" | "gemini") => void;
+  selectedId?: string;
+  onSelectId?: (id: string) => void;
   direction?: "up" | "down";
 }
 
-export default function ModelSelector({ size = "sm", value, onChange, direction = "down" }: ModelSelectorProps) {
+export default function ModelSelector({
+  size = "sm",
+  value,
+  onChange,
+  selectedId,
+  onSelectId,
+  direction = "down",
+}: ModelSelectorProps) {
   const [open, setOpen] = useState(false);
-  const [internalValue, setInternalValue] = useState<"gpt" | "claude" | "gemini">(value ?? models[0].apiModel as "gpt" | "claude" | "gemini");
+  const [internalValue, setInternalValue] = useState<"gpt" | "claude" | "gemini">(
+    value ?? (models[0].apiModel as "gpt" | "claude" | "gemini")
+  );
+  const [internalSelectedId, setInternalSelectedId] = useState<string>(models[0].id);
   const ref = useRef<HTMLDivElement>(null);
 
   const selectedValue = value ?? internalValue;
+  const selectedIdValue = selectedId ?? internalSelectedId;
   const selected = useMemo(() => {
-    return models.find((m) => m.apiModel === selectedValue) ?? models[0];
-  }, [selectedValue]);
+    return models.find((m) => m.id === selectedIdValue) ?? models[0];
+  }, [selectedIdValue]);
+
+  useEffect(() => {
+    if (!value) return;
+    const current = models.find((m) => m.id === selectedIdValue);
+    if (current?.apiModel === value) return;
+    const firstMatch = models.find((m) => m.apiModel === value) ?? models[0];
+    setInternalSelectedId(firstMatch.id);
+  }, [selectedIdValue, value]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -186,8 +188,10 @@ export default function ModelSelector({ size = "sm", value, onChange, direction 
                 key={m.id}
                 onClick={() => {
                   setInternalValue(m.apiModel as "gpt" | "claude" | "gemini");
+                  setInternalSelectedId(m.id);
                   setOpen(false);
                   if (onChange) onChange(m.apiModel as "gpt" | "claude" | "gemini");
+                  if (onSelectId) onSelectId(m.id);
                 }}
                 style={{
                   display: "flex",
@@ -211,7 +215,6 @@ export default function ModelSelector({ size = "sm", value, onChange, direction 
                 {m.icon}
                 <div style={{ flex: 1, textAlign: "left" }}>
                   <p style={{ color: "#ffffff", fontSize: "14px", fontWeight: 600, margin: 0 }}>{m.name}</p>
-                  <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "11px", margin: 0 }}>{m.desc}</p>
                 </div>
                 {isActive && (
                   <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#22c55e" }} />

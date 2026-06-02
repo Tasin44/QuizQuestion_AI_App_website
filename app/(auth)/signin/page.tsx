@@ -1,5 +1,5 @@
 "use client";
-import { useState, ChangeEvent } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AuthCard from "../_components/AuthCard";
@@ -12,6 +12,13 @@ export default function SignInPage() {
   const router = useRouter();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [googleLoginUrl, setGoogleLoginUrl] = useState("https://api.quizquestion.ai/accounts/google/login/");
+
+  useEffect(() => {
+    const apiBase = process.env.NEXT_PUBLIC_BASE_URL || "https://api.quizquestion.ai";
+    const nextUrl = `${window.location.origin}/dashboard`;
+    setGoogleLoginUrl(`${apiBase}/accounts/google/login/?next=${encodeURIComponent(nextUrl)}`);
+  }, []);
 
   const loginMutation = useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) => login(email, password),
@@ -101,7 +108,7 @@ export default function SignInPage() {
       </AuthButton>
 
       <a
-        href="https://api.quizquestion.ai/accounts/google/login/"
+        href={googleLoginUrl}
         style={{
           display: "flex",
           alignItems: "center",

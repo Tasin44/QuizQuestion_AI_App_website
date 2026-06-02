@@ -5,6 +5,7 @@ import {
   getProfile, 
   updateProfileFormData, 
   type ChatAskModel,
+  getChatHistory,
   createParentalRelation, 
   getChildScans, 
   getChildChats, 
@@ -113,6 +114,9 @@ export default function SettingsPage() {
   const [inviteError, setInviteError] = useState("");
   const [isInviting, setIsInviting] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
+  const [preferencesSuccess, setPreferencesSuccess] = useState("");
+  const [exportStatus, setExportStatus] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
 
   const [childScans, setChildScans] = useState<Record<string, ChildScanItem[]>>({});
   const [childChats, setChildChats] = useState<Record<string, ChildChatItem[]>>({});
@@ -231,6 +235,50 @@ export default function SettingsPage() {
     if (difficulty < 50) return "Intermediate";
     if (difficulty < 75) return "Advanced";
     return "Expert";
+  };
+
+  const handleSavePreferences = () => {
+    setPreferencesSuccess("Preferences saved successfully.");
+    setTimeout(() => setPreferencesSuccess(""), 2500);
+  };
+
+  const handleExportChatHistory = async () => {
+    setExportStatus("");
+    setIsExporting(true);
+    try {
+      const res = await getChatHistory();
+      const items = res.data || [];
+
+      const content = items.length
+        ? items.map((item, index) => {
+            const created = item.created_at ? new Date(item.created_at).toLocaleString() : "";
+            return [
+              `#${index + 1}${created ? ` (${created})` : ""}`,
+              `Q: ${item.prompt}`,
+              `A: ${item.ai_response}`,
+              item.image_url ? `Image: ${item.image_url}` : "",
+              item.file_url ? `File: ${item.file_url}` : "",
+              ""
+            ].filter(Boolean).join("\n");
+          }).join("\n")
+        : "No chat history available.";
+
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "chat-history.txt";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      setExportStatus("Chat history downloaded.");
+    } catch (err: unknown) {
+      setExportStatus(err instanceof Error ? err.message : "Failed to export chat history.");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -532,7 +580,12 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <button style={{
+              {preferencesSuccess && (
+                <p style={{ color: "#22c55e", fontSize: "12px", margin: "0 0 10px" }}>
+                  {preferencesSuccess}
+                </p>
+              )}
+              <button onClick={handleSavePreferences} style={{
                 width: "100%", padding: "13px",
                 background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
                 border: "none", borderRadius: "10px", color: "#fff",
@@ -642,13 +695,24 @@ export default function SettingsPage() {
                   <Toggle active={chatHistoryExport} onClick={() => setChatHistoryExport(!chatHistoryExport)} />
                 </div>
               </div>
-              <button style={{
+              {exportStatus && (
+                <p style={{ color: exportStatus.includes("Failed") ? "#ff6b6b" : "#22c55e", fontSize: "12px", margin: "0 0 10px" }}>
+                  {exportStatus}
+                </p>
+              )}
+              <button
+                onClick={handleExportChatHistory}
+                disabled={isExporting}
+                style={{
                 width: "100%", padding: "13px",
                 background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
                 border: "none", borderRadius: "10px", color: "#fff",
                 fontSize: "13px", fontWeight: 600, cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
-              }}>⬇ Export Selected Data</button>
+                opacity: isExporting ? 0.7 : 1,
+              }}>
+                {isExporting ? "Exporting..." : "⬇ Export Selected Data"}
+              </button>
             </div>
 
           </div>
