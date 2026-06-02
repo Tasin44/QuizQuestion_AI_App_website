@@ -39,13 +39,6 @@ export default function SubjectsSection() {
           </div>
         ))}
       </div>
-      <div style={{ marginTop: "36px" }}>
-        <button style={{ backgroundColor: "#4F46E5", border: "none", borderRadius: "10px", padding: "13px 32px", color: "#ffffff", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s ease" }}
-          onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(79,70,229,0.3)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
-          View All Subjects
-        </button>
-      </div>
     </section>
   );
 }
