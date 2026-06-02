@@ -16,8 +16,12 @@ export default function SignInPage() {
 
   useEffect(() => {
     const apiBase = process.env.NEXT_PUBLIC_BASE_URL || "https://api.quizquestion.ai";
-    const nextUrl = `${window.location.origin}/dashboard`;
-    setGoogleLoginUrl(`${apiBase}/accounts/google/login/?next=${encodeURIComponent(nextUrl)}`);
+
+    // Browser-based allauth login (redirect) -> backend mints JWT -> frontend stores tokens.
+    const frontendCallbackUrl = `${window.location.origin}/oauth-callback`;
+    const backendCompleteUrl = `${apiBase}/auth/social/complete/?next=${encodeURIComponent(frontendCallbackUrl)}`;
+
+    setGoogleLoginUrl(`${apiBase}/accounts/google/login/?next=${encodeURIComponent(backendCompleteUrl)}`);
   }, []);
 
   const loginMutation = useMutation({
