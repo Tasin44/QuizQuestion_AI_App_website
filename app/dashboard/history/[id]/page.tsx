@@ -4,6 +4,12 @@ import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getChatHistory, askChatFormData, type ChatAskModel } from "@/app/(auth)/_lib/api";
 import ModelSelector from "../../_components/ModelSelector";
+import { useChatContext } from "../../_components/ChatContext";
+import { Bot, User } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 
 interface ChatMessage {
   id: string;
@@ -56,195 +62,41 @@ function TypingIndicator() {
   );
 }
 
-// Render inline elements like bold (**), triple stars (***), or backticks (`)
-function renderInlineMarkdown(text: string) {
-  if (!text) return "";
-
-  // Split by inline code first
-  const codeParts = text.split(/(`[^`]+`)/g);
-  
-  return codeParts.map((part, partIdx) => {
-    if (part.startsWith("`") && part.endsWith("`")) {
-      return (
-        <code
-          key={partIdx}
-          style={{
-            backgroundColor: "rgba(255, 255, 255, 0.1)",
-            padding: "2px 6px",
-            borderRadius: "4px",
-            fontSize: "12px",
-            fontFamily: "monospace",
-            color: "#ef4444",
-          }}
-        >
-          {part.slice(1, -1)}
-        </code>
-      );
-    }
-
-    // Format bold/italic stars
-    // Handle triple asterisks: ***text*** -> Bold + Italic
-    // Handle double asterisks: **text** -> Bold
-    // Handle single asterisk: *text* -> Italic
-    const starParts = part.split(/(\*\*\*.*?\*\*\*|\*\*.*?\*\*|\*.*?\*)/g);
-    
-    return starParts.map((subPart, subIdx) => {
-      if (subPart.startsWith("***") && subPart.endsWith("***")) {
-        return (
-          <strong key={subIdx} style={{ fontWeight: 700, fontStyle: "italic", color: "#ffffff" }}>
-            {subPart.slice(3, -3)}
-          </strong>
-        );
-      }
-      if (subPart.startsWith("**") && subPart.endsWith("**")) {
-        return (
-          <strong key={subIdx} style={{ fontWeight: 700, color: "#ffffff" }}>
-            {subPart.slice(2, -2)}
-          </strong>
-        );
-      }
-      if (subPart.startsWith("*") && subPart.endsWith("*")) {
-        return (
-          <em key={subIdx} style={{ fontStyle: "italic" }}>
-            {subPart.slice(1, -1)}
-          </em>
-        );
-      }
-      return subPart;
-    });
-  });
-}
-
-// Render block markdown like lists, code blocks, and headers cleanly
-function renderMessageContent(content: string) {
-  if (!content) return null;
-
-  // Process code blocks first
-  const parts = content.split(/(```[\s\S]*?```)/g);
-
-  return parts.map((part, index) => {
-    if (part.startsWith("```") && part.endsWith("```")) {
-      const match = part.match(/```(\w*)\n([\s\S]*?)```/);
-      const code = match ? match[2] : part.slice(3, -3);
-
-      return (
-        <pre
-          key={index}
-          style={{
-            backgroundColor: "rgba(0, 0, 0, 0.25)",
-            padding: "12px",
-            borderRadius: "8px",
-            fontFamily: "monospace",
-            fontSize: "13px",
-            overflowX: "auto",
-            margin: "8px 0",
-            border: "1px solid rgba(255, 255, 255, 0.05)",
-            color: "#e2e8f0",
-          }}
-        >
-          <code style={{ color: "inherit", background: "none", padding: 0 }}>{code.trim()}</code>
-        </pre>
-      );
-    }
-
-    // Process normal text line by line
-    const lines = part.split("\n");
-    return (
-      <div key={index}>
-        {lines.map((line, lineIdx) => {
-          const cleanLine = line;
-
-          // Render bullet lists cleanly
-          const bulletMatch = cleanLine.match(/^(\s*)[-*+•]\s+(.*)/);
-          if (bulletMatch) {
-            const indent = bulletMatch[1].length * 12;
-            return (
-              <div
-                key={lineIdx}
-                style={{
-                  display: "flex",
-                  gap: "6px",
-                  paddingLeft: `${indent + 8}px`,
-                  margin: "4px 0",
-                  color: "inherit",
-                }}
-              >
-                <span>•</span>
-                <span>{renderInlineMarkdown(bulletMatch[2])}</span>
-              </div>
-            );
-          }
-
-          // Render numbered lists cleanly
-          const numberMatch = cleanLine.match(/^(\s*)\d+\.\s+(.*)/);
-          if (numberMatch) {
-            const indent = numberMatch[1].length * 12;
-            const num = cleanLine.match(/^\s*(\d+)\./)?.[1] || "1";
-            return (
-              <div
-                key={lineIdx}
-                style={{
-                  display: "flex",
-                  gap: "6px",
-                  paddingLeft: `${indent + 8}px`,
-                  margin: "4px 0",
-                  color: "inherit",
-                }}
-              >
-                <span>{num}.</span>
-                <span>{renderInlineMarkdown(numberMatch[2])}</span>
-              </div>
-            );
-          }
-
-          // Render headers cleanly
-          if (cleanLine.startsWith("### ")) {
-            return (
-              <h4 key={lineIdx} style={{ fontSize: "15px", fontWeight: 700, margin: "12px 0 6px", color: "#fff" }}>
-                {renderInlineMarkdown(cleanLine.slice(4))}
-              </h4>
-            );
-          }
-          if (cleanLine.startsWith("## ")) {
-            return (
-              <h3 key={lineIdx} style={{ fontSize: "17px", fontWeight: 700, margin: "16px 0 8px", color: "#fff" }}>
-                {renderInlineMarkdown(cleanLine.slice(3))}
-              </h3>
-            );
-          }
-          if (cleanLine.startsWith("# ")) {
-            return (
-              <h2 key={lineIdx} style={{ fontSize: "19px", fontWeight: 700, margin: "20px 0 10px", color: "#fff" }}>
-                {renderInlineMarkdown(cleanLine.slice(2))}
-              </h2>
-            );
-          }
-
-          // Normal line
-          return (
-            <p
-              key={lineIdx}
-              style={{
-                margin: cleanLine.trim() === "" ? "8px 0" : "4px 0",
-                minHeight: cleanLine.trim() === "" ? "8px" : "auto",
-                lineHeight: "1.6",
-                color: "inherit",
-              }}
-            >
-              {renderInlineMarkdown(cleanLine)}
-            </p>
-          );
-        })}
-      </div>
-    );
-  });
-}
+/* ───── Markdown components for react-markdown ───── */
+const mdComponents = {
+  h1: ({ children, ...p }: React.ComponentProps<"h1">) => <h2 style={{ fontSize: "19px", fontWeight: 700, margin: "20px 0 10px", color: "#fff" }} {...p}>{children}</h2>,
+  h2: ({ children, ...p }: React.ComponentProps<"h2">) => <h3 style={{ fontSize: "17px", fontWeight: 700, margin: "16px 0 8px", color: "#fff" }} {...p}>{children}</h3>,
+  h3: ({ children, ...p }: React.ComponentProps<"h3">) => <h4 style={{ fontSize: "15px", fontWeight: 700, margin: "12px 0 6px", color: "#fff" }} {...p}>{children}</h4>,
+  p: ({ children, ...p }: React.ComponentProps<"p">) => <p style={{ margin: "6px 0", lineHeight: "1.7", color: "inherit" }} {...p}>{children}</p>,
+  strong: ({ children, ...p }: React.ComponentProps<"strong">) => <strong style={{ fontWeight: 700, color: "#fff" }} {...p}>{children}</strong>,
+  em: ({ children, ...p }: React.ComponentProps<"em">) => <em style={{ fontStyle: "italic" }} {...p}>{children}</em>,
+  ul: ({ children, ...p }: React.ComponentProps<"ul">) => <ul style={{ margin: "6px 0", paddingLeft: "20px", listStyleType: "disc" }} {...p}>{children}</ul>,
+  ol: ({ children, ...p }: React.ComponentProps<"ol">) => <ol style={{ margin: "6px 0", paddingLeft: "20px" }} {...p}>{children}</ol>,
+  li: ({ children, ...p }: React.ComponentProps<"li">) => <li style={{ margin: "4px 0", lineHeight: "1.6", color: "inherit" }} {...p}>{children}</li>,
+  code: ({ children, className, ...p }: React.ComponentProps<"code"> & { className?: string }) => {
+    if (className?.startsWith("language-")) return <code style={{ color: "#e2e8f0", background: "none", padding: 0, fontFamily: "monospace", fontSize: "13px" }} {...p}>{children}</code>;
+    return <code style={{ backgroundColor: "rgba(255,255,255,0.1)", padding: "2px 6px", borderRadius: "4px", fontSize: "12px", fontFamily: "monospace", color: "#ef4444" }} {...p}>{children}</code>;
+  },
+  pre: ({ children, ...p }: React.ComponentProps<"pre">) => <pre style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: "14px 16px", borderRadius: "10px", fontFamily: "monospace", fontSize: "13px", overflowX: "auto", margin: "10px 0", border: "1px solid rgba(255,255,255,0.06)", color: "#e2e8f0", lineHeight: 1.6 }} {...p}>{children}</pre>,
+  blockquote: ({ children, ...p }: React.ComponentProps<"blockquote">) => <blockquote style={{ borderLeft: "3px solid rgba(108,92,231,0.5)", paddingLeft: "14px", margin: "10px 0", color: "rgba(255,255,255,0.6)", fontStyle: "italic" }} {...p}>{children}</blockquote>,
+  a: ({ children, href, ...p }: React.ComponentProps<"a">) => <a href={href} style={{ color: "#7b68ee", textDecoration: "underline" }} target="_blank" rel="noreferrer" {...p}>{children}</a>,
+  table: ({ children, ...p }: React.ComponentProps<"table">) => <div style={{ overflowX: "auto", margin: "10px 0" }}><table style={{ borderCollapse: "collapse", width: "100%", fontSize: "13px" }} {...p}>{children}</table></div>,
+  th: ({ children, ...p }: React.ComponentProps<"th">) => <th style={{ borderBottom: "1px solid rgba(255,255,255,0.12)", padding: "8px 12px", textAlign: "left", color: "#fff", fontWeight: 600 }} {...p}>{children}</th>,
+  td: ({ children, ...p }: React.ComponentProps<"td">) => <td style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "8px 12px", color: "rgba(255,255,255,0.75)" }} {...p}>{children}</td>,
+};
 
 
 export default function ChatDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = String(params?.id || "");
+  const { setHasChat } = useChatContext();
+
+  /* Signal layout to hide footer */
+  useEffect(() => {
+    setHasChat(true);
+    return () => setHasChat(false);
+  }, [setHasChat]);
 
   const { data: historyData, isLoading, error } = useQuery({
     queryKey: ["chatHistory"],
@@ -458,7 +310,8 @@ export default function ChatDetailPage() {
       </div>
 
       {/* Messages */}
-      <div style={{ flex: 1, padding: "24px 32px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div style={{ flex: 1, padding: "24px 32px 20px", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+        <div style={{ maxWidth: "960px", width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", gap: "20px" }}>
         {isLoading && (
           <div style={{ display: "flex", justifyContent: "center", padding: "40px 0" }}>
             <div
@@ -489,7 +342,7 @@ export default function ChatDetailPage() {
               gap: "12px",
               alignItems: "flex-start",
               justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
-              maxWidth: "760px",
+              maxWidth: "100%",
               width: "100%",
               margin: "0 auto",
             }}
@@ -498,21 +351,19 @@ export default function ChatDetailPage() {
             {msg.role === "assistant" && (
               <div
                 style={{
-                  width: "34px",
-                  height: "34px",
-                  borderRadius: "50%",
+                  width: "38px",
+                  height: "38px",
+                  borderRadius: "12px",
                   background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "11px",
-                  fontWeight: 700,
                   color: "#fff",
                   flexShrink: 0,
-                  boxShadow: "0 2px 12px rgba(108,92,231,0.3)",
+                  boxShadow: "0 3px 14px rgba(108,92,231,0.35)",
                 }}
               >
-                {msg.model ? (MODEL_LABELS[msg.model]?.[0] || "AI") : "AI"}
+                <Bot size={20} strokeWidth={2} />
               </div>
             )}
 
@@ -573,7 +424,11 @@ export default function ChatDetailPage() {
                     textAlign: "left",
                   }}
                 >
-                  {renderMessageContent(msg.content)}
+                  {msg.role === "assistant" ? (
+                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={mdComponents}>
+                      {msg.content}
+                    </ReactMarkdown>
+                  ) : msg.content}
                 </div>
               </div>
 
@@ -586,20 +441,19 @@ export default function ChatDetailPage() {
             {msg.role === "user" && (
               <div
                 style={{
-                  width: "34px",
-                  height: "34px",
-                  borderRadius: "50%",
+                  width: "38px",
+                  height: "38px",
+                  borderRadius: "12px",
                   background: "linear-gradient(135deg, #f59e0b, #ef4444)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "13px",
-                  fontWeight: 700,
                   color: "#fff",
                   flexShrink: 0,
+                  boxShadow: "0 3px 14px rgba(245,158,11,0.3)",
                 }}
               >
-                U
+                <User size={20} strokeWidth={2} />
               </div>
             )}
           </div>
@@ -609,7 +463,7 @@ export default function ChatDetailPage() {
         {askMutation.isPending && (
           <div
             className="chat-msg"
-            style={{ display: "flex", gap: "12px", alignItems: "flex-start", maxWidth: "760px", width: "100%", margin: "0 auto" }}
+            style={{ display: "flex", gap: "12px", alignItems: "flex-start", maxWidth: "100%", width: "100%", margin: "0 auto" }}
           >
             <div
               style={{
@@ -641,14 +495,15 @@ export default function ChatDetailPage() {
           </div>
         )}
 
-        <div ref={chatEndRef} />
+          <div ref={chatEndRef} />
+        </div>
       </div>
 
       {/* Chat Input + Model Selector at the right side */}
       <div style={{ padding: "16px 32px 24px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
         {/* Attachment previews */}
         {(imageFile || docFile) && (
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", maxWidth: "860px", margin: "0 auto 8px", padding: "0 4px" }}>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", maxWidth: "960px", margin: "0 auto 8px", padding: "0 4px" }}>
             {imageFile && (
               <span
                 style={{
@@ -703,7 +558,7 @@ export default function ChatDetailPage() {
             display: "flex",
             alignItems: "flex-end",
             gap: "12px",
-            maxWidth: "860px",
+            maxWidth: "960px",
             width: "100%",
             margin: "0 auto",
           }}

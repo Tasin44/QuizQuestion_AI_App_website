@@ -11,6 +11,11 @@ import ModelSelector from "./_components/ModelSelector";
 import { useMutation } from "@tanstack/react-query";
 import { askChatFormData, type ChatAskModel } from "@/app/(auth)/_lib/api";
 import { Bot, User } from "lucide-react";
+import { useChatContext } from "./_components/ChatContext";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 
 /* ───── Types ───── */
 interface ChatMessage {
@@ -58,89 +63,111 @@ function TypingIndicator() {
   );
 }
 
-function renderInlineMarkdown(text: string) {
-  if (!text) return "";
-  const codeParts = text.split(/(`[^`]+`)/g);
-  return codeParts.map((part, partIdx) => {
-    if (part.startsWith("`") && part.endsWith("`")) {
+/* ───── Markdown components for react-markdown ───── */
+const markdownComponents = {
+  h1: ({ children, ...props }: React.ComponentProps<"h1">) => (
+    <h2 style={{ fontSize: "19px", fontWeight: 700, margin: "20px 0 10px", color: "#fff" }} {...props}>{children}</h2>
+  ),
+  h2: ({ children, ...props }: React.ComponentProps<"h2">) => (
+    <h3 style={{ fontSize: "17px", fontWeight: 700, margin: "16px 0 8px", color: "#fff" }} {...props}>{children}</h3>
+  ),
+  h3: ({ children, ...props }: React.ComponentProps<"h3">) => (
+    <h4 style={{ fontSize: "15px", fontWeight: 700, margin: "12px 0 6px", color: "#fff" }} {...props}>{children}</h4>
+  ),
+  p: ({ children, ...props }: React.ComponentProps<"p">) => (
+    <p style={{ margin: "6px 0", lineHeight: "1.7", color: "inherit" }} {...props}>{children}</p>
+  ),
+  strong: ({ children, ...props }: React.ComponentProps<"strong">) => (
+    <strong style={{ fontWeight: 700, color: "#fff" }} {...props}>{children}</strong>
+  ),
+  em: ({ children, ...props }: React.ComponentProps<"em">) => (
+    <em style={{ fontStyle: "italic" }} {...props}>{children}</em>
+  ),
+  ul: ({ children, ...props }: React.ComponentProps<"ul">) => (
+    <ul style={{ margin: "6px 0", paddingLeft: "20px", listStyleType: "disc" }} {...props}>{children}</ul>
+  ),
+  ol: ({ children, ...props }: React.ComponentProps<"ol">) => (
+    <ol style={{ margin: "6px 0", paddingLeft: "20px" }} {...props}>{children}</ol>
+  ),
+  li: ({ children, ...props }: React.ComponentProps<"li">) => (
+    <li style={{ margin: "4px 0", lineHeight: "1.6", color: "inherit" }} {...props}>{children}</li>
+  ),
+  code: ({ children, className, ...props }: React.ComponentProps<"code"> & { className?: string }) => {
+    const isBlock = className?.startsWith("language-");
+    if (isBlock) {
       return (
-        <code
-          key={partIdx}
-          style={{
-            backgroundColor: "rgba(255, 255, 255, 0.1)",
-            padding: "2px 6px",
-            borderRadius: "4px",
-            fontSize: "12px",
-            fontFamily: "monospace",
-            color: "#ef4444",
-          }}
-        >
-          {part.slice(1, -1)}
+        <code style={{ color: "#e2e8f0", background: "none", padding: 0, fontFamily: "monospace", fontSize: "13px" }} {...props}>
+          {children}
         </code>
       );
     }
-    const starParts = part.split(/(\*\*\*.*?\*\*\*|\*\*.*?\*\*|\*.*?\*)/g);
-    return starParts.map((sub, subIdx) => {
-      if (sub.startsWith("***") && sub.endsWith("***")) return <strong key={subIdx} style={{ fontWeight: 700, fontStyle: "italic", color: "#fff" }}>{sub.slice(3, -3)}</strong>;
-      if (sub.startsWith("**") && sub.endsWith("**")) return <strong key={subIdx} style={{ fontWeight: 700, color: "#fff" }}>{sub.slice(2, -2)}</strong>;
-      if (sub.startsWith("*") && sub.endsWith("*")) return <em key={subIdx} style={{ fontStyle: "italic" }}>{sub.slice(1, -1)}</em>;
-      return sub;
-    });
-  });
-}
-
-function renderMessageContent(content: string) {
-  if (!content) return null;
-  const parts = content.split(/(```[\s\S]*?```)/g);
-  return parts.map((part, index) => {
-    if (part.startsWith("```") && part.endsWith("```")) {
-      const match = part.match(/```(\w*)\n([\s\S]*?)```/);
-      const code = match ? match[2] : part.slice(3, -3);
-      return (
-        <pre
-          key={index}
-          style={{
-            backgroundColor: "rgba(0, 0, 0, 0.25)",
-            padding: "12px",
-            borderRadius: "8px",
-            fontFamily: "monospace",
-            fontSize: "13px",
-            overflowX: "auto",
-            margin: "8px 0",
-            border: "1px solid rgba(255, 255, 255, 0.05)",
-            color: "#e2e8f0",
-          }}
-        >
-          <code style={{ color: "inherit", background: "none", padding: 0 }}>{code.trim()}</code>
-        </pre>
-      );
-    }
-    const lines = part.split("\n");
     return (
-      <div key={index}>
-        {lines.map((line, lineIdx) => {
-          const bulletMatch = line.match(/^(\s*)[-*+•]\s+(.*)/);
-          if (bulletMatch) {
-            const indent = bulletMatch[1].length * 12;
-            return <div key={lineIdx} style={{ display: "flex", gap: "6px", paddingLeft: `${indent + 8}px`, margin: "4px 0", color: "inherit" }}><span>•</span><span>{renderInlineMarkdown(bulletMatch[2])}</span></div>;
-          }
-          const numberMatch = line.match(/^(\s*)\d+\.\s+(.*)/);
-          if (numberMatch) {
-            const indent = numberMatch[1].length * 12;
-            const num = line.match(/^\s*(\d+)\./)?.[1] || "1";
-            return <div key={lineIdx} style={{ display: "flex", gap: "6px", paddingLeft: `${indent + 8}px`, margin: "4px 0", color: "inherit" }}><span>{num}.</span><span>{renderInlineMarkdown(numberMatch[2])}</span></div>;
-          }
-          if (line.startsWith("### ")) return <h4 key={lineIdx} style={{ fontSize: "15px", fontWeight: 700, margin: "12px 0 6px", color: "#fff" }}>{renderInlineMarkdown(line.slice(4))}</h4>;
-          if (line.startsWith("## ")) return <h3 key={lineIdx} style={{ fontSize: "17px", fontWeight: 700, margin: "16px 0 8px", color: "#fff" }}>{renderInlineMarkdown(line.slice(3))}</h3>;
-          if (line.startsWith("# ")) return <h2 key={lineIdx} style={{ fontSize: "19px", fontWeight: 700, margin: "20px 0 10px", color: "#fff" }}>{renderInlineMarkdown(line.slice(2))}</h2>;
-          return <p key={lineIdx} style={{ margin: line.trim() === "" ? "8px 0" : "4px 0", minHeight: line.trim() === "" ? "8px" : "auto", lineHeight: "1.6", color: "inherit" }}>{renderInlineMarkdown(line)}</p>;
-        })}
-      </div>
+      <code
+        style={{
+          backgroundColor: "rgba(255, 255, 255, 0.1)",
+          padding: "2px 6px",
+          borderRadius: "4px",
+          fontSize: "12px",
+          fontFamily: "monospace",
+          color: "#ef4444",
+        }}
+        {...props}
+      >
+        {children}
+      </code>
     );
-  });
-}
+  },
+  pre: ({ children, ...props }: React.ComponentProps<"pre">) => (
+    <pre
+      style={{
+        backgroundColor: "rgba(0, 0, 0, 0.3)",
+        padding: "14px 16px",
+        borderRadius: "10px",
+        fontFamily: "monospace",
+        fontSize: "13px",
+        overflowX: "auto",
+        margin: "10px 0",
+        border: "1px solid rgba(255, 255, 255, 0.06)",
+        color: "#e2e8f0",
+        lineHeight: 1.6,
+      }}
+      {...props}
+    >
+      {children}
+    </pre>
+  ),
+  blockquote: ({ children, ...props }: React.ComponentProps<"blockquote">) => (
+    <blockquote
+      style={{
+        borderLeft: "3px solid rgba(108,92,231,0.5)",
+        paddingLeft: "14px",
+        margin: "10px 0",
+        color: "rgba(255,255,255,0.6)",
+        fontStyle: "italic",
+      }}
+      {...props}
+    >
+      {children}
+    </blockquote>
+  ),
+  a: ({ children, href, ...props }: React.ComponentProps<"a">) => (
+    <a href={href} style={{ color: "#7b68ee", textDecoration: "underline" }} target="_blank" rel="noreferrer" {...props}>{children}</a>
+  ),
+  table: ({ children, ...props }: React.ComponentProps<"table">) => (
+    <div style={{ overflowX: "auto", margin: "10px 0" }}>
+      <table style={{ borderCollapse: "collapse", width: "100%", fontSize: "13px" }} {...props}>{children}</table>
+    </div>
+  ),
+  th: ({ children, ...props }: React.ComponentProps<"th">) => (
+    <th style={{ borderBottom: "1px solid rgba(255,255,255,0.12)", padding: "8px 12px", textAlign: "left", color: "#fff", fontWeight: 600 }} {...props}>{children}</th>
+  ),
+  td: ({ children, ...props }: React.ComponentProps<"td">) => (
+    <td style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "8px 12px", color: "rgba(255,255,255,0.75)" }} {...props}>{children}</td>
+  ),
+};
 
 export default function DashboardPage() {
+  const { setHasChat } = useChatContext();
   const [message, setMessage] = useState("");
   const [model, setModel] = useState("gpt-4o");
 
@@ -256,6 +283,12 @@ export default function DashboardPage() {
 
   const hasChat = messages.length > 0;
 
+  /* ───── Signal layout to hide footer ───── */
+  useEffect(() => {
+    setHasChat(hasChat);
+    return () => setHasChat(false);
+  }, [hasChat, setHasChat]);
+
   return (
     <div style={{ backgroundColor: "#0A0A0F", minHeight: "100%" }}>
       {/* ===== Inline animation keyframes ===== */}
@@ -369,8 +402,8 @@ export default function DashboardPage() {
             className="chat-messages-area"
             style={{
               width: "100%",
-              maxWidth: "780px",
-              maxHeight: "55vh",
+              maxWidth: "960px",
+              maxHeight: "calc(100vh - 220px)",
               overflowY: "auto",
               marginBottom: "20px",
               display: "flex",
@@ -479,7 +512,13 @@ export default function DashboardPage() {
                         textAlign: "left",
                       }}
                     >
-                      {renderMessageContent(msg.content)}
+                      {msg.role === "assistant" ? (
+                        <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={markdownComponents}>
+                          {msg.content}
+                        </ReactMarkdown>
+                      ) : (
+                        msg.content
+                      )}
                     </div>
                   </div>
 
@@ -562,7 +601,7 @@ export default function DashboardPage() {
           className="chat-input-area"
           style={{
             width: "100%",
-            maxWidth: "720px",
+            maxWidth: "960px",
             backgroundColor: "#16161f",
             border: "1px solid rgba(255,255,255,0.09)",
             borderRadius: "16px",
