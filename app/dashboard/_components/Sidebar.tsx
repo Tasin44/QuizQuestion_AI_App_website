@@ -13,6 +13,7 @@ import {
 interface SidebarProps {
   onLogout: () => void;
   onNavClick?: () => void;
+  collapsed?: boolean;
 }
 
 const navItems = [
@@ -48,30 +49,45 @@ const navItems = [
   },
 ];
 
-export default function Sidebar({ onLogout, onNavClick }: SidebarProps) {
+export default function Sidebar({ onLogout, onNavClick, collapsed = false }: SidebarProps) {
   const pathname = usePathname();
 
   return (
     <aside
       style={{
-        width: "260px",
+        width: collapsed ? "80px" : "260px",
         minHeight: "100vh",
         backgroundColor: "#111118",
-        borderRight: "1px solid rgba(255,255,255,0.06)",
+        borderRight: "none",
         display: "flex",
         flexDirection: "column",
-        padding: "28px 16px 16px",
+        padding: collapsed ? "28px 12px 16px" : "28px 16px 16px",
         position: "sticky",
         top: 0,
         height: "100vh",
+        transition: "width 0.25s cubic-bezier(0.4, 0, 0.2, 1), padding 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
       {/* Logo */}
-      <div style={{ padding: "0 8px", marginBottom: "40px" }}>
+      <div 
+        style={{ 
+          padding: collapsed ? "0" : "0 8px", 
+          marginBottom: "40px",
+          display: "flex",
+          justifyContent: collapsed ? "center" : "flex-start",
+          transition: "all 0.25s ease",
+        }}
+      >
         <img
           src="/images/ai-logo.png"
           alt="Quiz Question AI"
-          style={{ height: "42px", objectFit: "contain" }}
+          style={{ 
+            height: "36px", 
+            width: collapsed ? "32px" : "auto",
+            objectFit: "cover",
+            objectPosition: "left",
+            transition: "width 0.25s ease",
+          }}
         />
       </div>
 
@@ -86,10 +102,12 @@ export default function Sidebar({ onLogout, onNavClick }: SidebarProps) {
               key={item.href}
               href={item.href}
               onClick={onNavClick}
+              title={collapsed ? item.label : undefined}
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "14px",
+                justifyContent: collapsed ? "center" : "flex-start",
+                gap: collapsed ? "0" : "14px",
                 padding: "12px 14px",
                 borderRadius: "10px",
                 color: isActive ? "#ffffff" : "rgba(255,255,255,0.55)",
@@ -113,7 +131,7 @@ export default function Sidebar({ onLogout, onNavClick }: SidebarProps) {
               }}
             >
               {item.icon}
-              {item.label}
+              {!collapsed && <span>{item.label}</span>}
             </Link>
           );
         })}
@@ -122,10 +140,12 @@ export default function Sidebar({ onLogout, onNavClick }: SidebarProps) {
       {/* Logout Button */}
       <button
         onClick={onLogout}
+        title={collapsed ? "Logout" : undefined}
         style={{
           display: "flex",
           alignItems: "center",
-          gap: "14px",
+          justifyContent: collapsed ? "center" : "flex-start",
+          gap: collapsed ? "0" : "14px",
           padding: "14px",
           borderRadius: "10px",
           backgroundColor: "rgba(220, 38, 38, 0.12)",
@@ -147,7 +167,7 @@ export default function Sidebar({ onLogout, onNavClick }: SidebarProps) {
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" />
         </svg>
-        Logout
+        {!collapsed && <span>Logout</span>}
       </button>
     </aside>
   );

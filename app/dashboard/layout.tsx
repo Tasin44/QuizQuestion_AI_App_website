@@ -11,6 +11,7 @@ import "react-toastify/dist/ReactToastify.css";
 function DashboardInner({ children }: { children: React.ReactNode }) {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const { hasChat } = useChatContext();
 
   // Close sidebar on route change or resize to desktop
@@ -34,6 +35,14 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
     return () => { document.body.style.overflow = ""; };
   }, [sidebarOpen]);
 
+  const handleMenuToggle = () => {
+    if (window.innerWidth <= 768) {
+      setSidebarOpen(!sidebarOpen);
+    } else {
+      setDesktopSidebarOpen(!desktopSidebarOpen);
+    }
+  };
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "#0A0A0F" }}>
       {/* Global responsive styles */}
@@ -54,9 +63,18 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
         }
       `}</style>
 
-      {/* Desktop sidebar (always visible on desktop) */}
-      <div className="dashboard-sidebar-desktop">
-        <Sidebar onLogout={() => setShowLogoutModal(true)} onNavClick={() => {}} />
+      {/* Desktop sidebar */}
+      <div 
+        className="dashboard-sidebar-desktop"
+        style={{
+          width: desktopSidebarOpen ? "260px" : "80px",
+          overflow: "hidden",
+          transition: "width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+          flexShrink: 0,
+          borderRight: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        <Sidebar onLogout={() => setShowLogoutModal(true)} onNavClick={() => {}} collapsed={!desktopSidebarOpen} />
       </div>
 
       {/* Mobile sidebar overlay */}
@@ -103,7 +121,8 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
         <TopNavbar
           onLogout={() => setShowLogoutModal(true)}
-          onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
+          onMenuToggle={handleMenuToggle}
+          isSidebarCollapsed={!desktopSidebarOpen}
         />
         <main
           style={{

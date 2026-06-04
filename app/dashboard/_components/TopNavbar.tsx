@@ -4,13 +4,15 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { getProfile } from "@/app/(auth)/_lib/api";
 import { getAccessToken } from "@/app/(auth)/_lib/authStorage";
+import { ListCollapse } from "lucide-react";
 
 interface TopNavbarProps {
   onLogout?: () => void;
   onMenuToggle?: () => void;
+  isSidebarCollapsed?: boolean;
 }
 
-export default function TopNavbar({ onLogout, onMenuToggle }: TopNavbarProps) {
+export default function TopNavbar({ onLogout, onMenuToggle, isSidebarCollapsed }: TopNavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -40,12 +42,10 @@ export default function TopNavbar({ onLogout, onMenuToggle }: TopNavbarProps) {
   return (
     <>
       <style>{`
-        .topnav-hamburger { display: none; }
         .topnav-logo-mobile { display: none; }
         .topnav-user-name { display: block; }
         .topnav-user-email { display: block; }
         @media (max-width: 768px) {
-          .topnav-hamburger { display: flex !important; }
           .topnav-logo-mobile { display: flex !important; }
           .topnav-user-name { display: none !important; }
           .topnav-user-email { display: none !important; }
@@ -65,11 +65,10 @@ export default function TopNavbar({ onLogout, onMenuToggle }: TopNavbarProps) {
           gap: "12px",
         }}
       >
-        {/* Left side: hamburger + mobile logo */}
+        {/* Left side: toggle button + mobile/collapsed logo */}
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          {/* Hamburger button (mobile only) */}
+          {/* Sidebar Toggle button (ListCollapse) */}
           <button
-            className="topnav-hamburger"
             onClick={onMenuToggle}
             style={{
               width: "40px",
@@ -78,17 +77,29 @@ export default function TopNavbar({ onLogout, onMenuToggle }: TopNavbarProps) {
               backgroundColor: "rgba(255,255,255,0.06)",
               border: "1px solid rgba(255,255,255,0.08)",
               cursor: "pointer",
+              display: "flex",
               alignItems: "center",
               justifyContent: "center",
               color: "rgba(255,255,255,0.8)",
               transition: "all 0.2s ease",
             }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)";
+              e.currentTarget.style.color = "#ffffff";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.06)";
+              e.currentTarget.style.color = "rgba(255,255,255,0.8)";
+            }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
+            <ListCollapse 
+              size={20} 
+              strokeWidth={1.8} 
+              style={{ 
+                transform: isSidebarCollapsed ? "rotate(180deg)" : "none", 
+                transition: "transform 0.2s ease" 
+              }} 
+            />
           </button>
 
           {/* Mobile logo */}
