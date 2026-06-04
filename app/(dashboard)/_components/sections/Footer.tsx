@@ -5,7 +5,7 @@ import { FaFacebook, FaInstagramSquare } from "react-icons/fa";
 import { FaSquareXTwitter } from "react-icons/fa6";
 
 const footerLinks = {
-  Company: ["Privacy Policy", "Terms of Service"],
+  Company: ["Help Center", "Privacy Policy", "Terms of Service"],
 };
 
 const socialLinks = [
@@ -65,7 +65,8 @@ export default function Footer() {
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {links.map((link) => {
                   let href = "#";
-                  if (link === "Privacy Policy") href = "/dashboard/privacy-policy";
+                  if (link === "Help Center") href = "/dashboard/help-center";
+                  else if (link === "Privacy Policy") href = "/dashboard/privacy-policy";
                   else if (link === "Terms of Service") href = "/dashboard/term-of-service";
 
                   return (
