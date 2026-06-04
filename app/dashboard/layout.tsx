@@ -4,16 +4,14 @@ import Sidebar from "./_components/Sidebar";
 import TopNavbar from "./_components/TopNavbar";
 import LogoutModal from "./_components/LogoutModal";
 import Footer from "@/app/(dashboard)/_components/sections/Footer";
+import { ChatProvider, useChatContext } from "./_components/ChatContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function DashboardInner({ children }: { children: React.ReactNode }) {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { hasChat } = useChatContext();
 
   // Close sidebar on route change or resize to desktop
   useEffect(() => {
@@ -121,7 +119,7 @@ export default function DashboardLayout({
           <div style={{ flex: 1 }}>
             {children}
           </div>
-          <Footer />
+          {!hasChat && <Footer />}
         </main>
       </div>
       {showLogoutModal && (
@@ -146,5 +144,17 @@ export default function DashboardLayout({
         }
       `}</style>
     </div>
+  );
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <ChatProvider>
+      <DashboardInner>{children}</DashboardInner>
+    </ChatProvider>
   );
 }
