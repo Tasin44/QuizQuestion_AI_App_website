@@ -72,6 +72,9 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
           transition: "width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
           flexShrink: 0,
           borderRight: "1px solid rgba(255,255,255,0.06)",
+          position: "sticky",
+          top: 0,
+          height: "100vh",
         }}
       >
         <Sidebar onLogout={() => setShowLogoutModal(true)} onNavClick={() => {}} collapsed={!desktopSidebarOpen} />
