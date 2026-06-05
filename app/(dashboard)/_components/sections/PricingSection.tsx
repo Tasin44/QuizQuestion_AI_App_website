@@ -2,23 +2,8 @@
 
 const plans = [
   {
-    name: "Free",
-    price: "$0",
-    period: "/month",
-    features: [
-      { text: "5 AI questions per day", included: true },
-      { text: "Basic AI models", included: true },
-      { text: "Photo to Solution", included: true },
-      { text: "Limited history", included: true },
-      { text: "Priority support", included: false },
-      { text: "Unlimited questions", included: false },
-    ],
-    buttonText: "Current Plan",
-    buttonStyle: "outline" as const,
-  },
-  {
-    name: "Pro",
-    price: "$29",
+    name: "Monthly",
+    price: "$7.99",
     period: "/month",
     features: [
       { text: "Unlimited AI questions", included: true },
@@ -26,11 +11,44 @@ const plans = [
       { text: "Photo to Solution", included: true },
       { text: "Unlimited history", included: true },
       { text: "Priority support", included: true },
-      { text: "Advanced analytics", included: true },
+      { text: "Cancel anytime", included: true },
     ],
-    buttonText: "Upgrade to Pro",
+    buttonText: "Subscribe Monthly",
     buttonStyle: "filled" as const,
+    savings: null,
+  },
+  {
+    name: "3 Months",
+    price: "$19.99",
+    period: "/quarterly",
+    features: [
+      { text: "Unlimited AI questions", included: true },
+      { text: "All AI models (GPT-4o, Claude, Gemini)", included: true },
+      { text: "Photo to Solution", included: true },
+      { text: "Unlimited history", included: true },
+      { text: "Priority support", included: true },
+      { text: "Cancel anytime", included: true },
+    ],
+    buttonText: "Subscribe Quarterly",
+    buttonStyle: "filled" as const,
+    savings: "Save 17%",
     popular: true,
+  },
+  {
+    name: "Annual",
+    price: "$59.99",
+    period: "/year",
+    features: [
+      { text: "Unlimited AI questions", included: true },
+      { text: "All AI models (GPT-4o, Claude, Gemini)", included: true },
+      { text: "Photo to Solution", included: true },
+      { text: "Unlimited history", included: true },
+      { text: "Priority support", included: true },
+      { text: "Cancel anytime", included: true },
+    ],
+    buttonText: "Subscribe Yearly",
+    buttonStyle: "filled" as const,
+    savings: "Save 37%",
   },
 ];
 
@@ -40,15 +58,15 @@ export default function PricingSection() {
       style={{
         padding: "80px 40px",
         textAlign: "center",
-        maxWidth: "900px",
+        maxWidth: "1100px",
         margin: "0 auto",
       }}
     >
       <h2 style={{ color: "#ffffff", fontSize: "34px", fontWeight: 700, margin: "0 0 50px" }}>
-        Start for free. Upgrade anytime.
+        Choose Your Subscription Plan
       </h2>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px" }}>
         {plans.map((plan) => (
           <div
             key={plan.name}
@@ -89,29 +107,60 @@ export default function PricingSection() {
               </div>
             )}
 
+            {plan.savings && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "-12px",
+                  left: "24px",
+                  backgroundColor: "#22c55e",
+                  color: "#fff",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  padding: "4px 14px",
+                  borderRadius: "20px",
+                  letterSpacing: "0.3px",
+                }}
+              >
+                {plan.savings}
+              </div>
+            )}
+
             <h3 style={{ color: "rgba(255,255,255,0.5)", fontSize: "15px", fontWeight: 600, margin: "0 0 6px" }}>
               {plan.name}
             </h3>
-            <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "28px" }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "8px" }}>
               <span style={{ color: "#ffffff", fontSize: "40px", fontWeight: 700 }}>{plan.price}</span>
               <span style={{ color: "rgba(255,255,255,0.35)", fontSize: "14px" }}>{plan.period}</span>
             </div>
+            
+            {plan.name === "Annual" && (
+              <div style={{ marginBottom: "28px" }}>
+                <span style={{ color: "#22c55e", fontSize: "12px", fontWeight: 500 }}>
+                  Just $5.00/month
+                </span>
+              </div>
+            )}
+            {plan.name === "3 Months" && (
+              <div style={{ marginBottom: "28px" }}>
+                <span style={{ color: "#22c55e", fontSize: "12px", fontWeight: 500 }}>
+                  Just $6.66/month
+                </span>
+              </div>
+            )}
+            {plan.name === "Monthly" && (
+              <div style={{ marginBottom: "28px" }}></div>
+            )}
 
             <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "32px" }}>
               {plan.features.map((f) => (
                 <div key={f.text} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  {f.included ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                  )}
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
                   <span
                     style={{
-                      color: f.included ? "rgba(255,255,255,0.65)" : "rgba(255,255,255,0.25)",
+                      color: "rgba(255,255,255,0.65)",
                       fontSize: "13px",
                     }}
                   >
@@ -130,33 +179,17 @@ export default function PricingSection() {
                 fontWeight: 600,
                 cursor: "pointer",
                 transition: "all 0.2s ease",
-                ...(plan.buttonStyle === "filled"
-                  ? {
-                      backgroundColor: "#4F46E5",
-                      border: "none",
-                      color: "#ffffff",
-                    }
-                  : {
-                      backgroundColor: "transparent",
-                      border: "1px solid rgba(255,255,255,0.15)",
-                      color: "rgba(255,255,255,0.6)",
-                    }),
+                backgroundColor: "#4F46E5",
+                border: "none",
+                color: "#ffffff",
               }}
               onMouseEnter={(e) => {
-                if (plan.buttonStyle === "filled") {
-                  e.currentTarget.style.boxShadow = "0 4px 20px rgba(79,70,229,0.3)";
-                } else {
-                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.3)";
-                  e.currentTarget.style.color = "#ffffff";
-                }
+                e.currentTarget.style.backgroundColor = "#6366f1";
+                e.currentTarget.style.boxShadow = "0 4px 20px rgba(79,70,229,0.3)";
               }}
               onMouseLeave={(e) => {
-                if (plan.buttonStyle === "filled") {
-                  e.currentTarget.style.boxShadow = "none";
-                } else {
-                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)";
-                  e.currentTarget.style.color = "rgba(255,255,255,0.6)";
-                }
+                e.currentTarget.style.backgroundColor = "#4F46E5";
+                e.currentTarget.style.boxShadow = "none";
               }}
             >
               {plan.buttonText}
