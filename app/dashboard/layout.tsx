@@ -7,7 +7,7 @@ import Footer from "@/app/(dashboard)/_components/sections/Footer";
 import { ChatProvider, useChatContext } from "./_components/ChatContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { setAuthTokens } from "@/app/(auth)/_lib/authStorage";
+import { setAuthTokens, getAccessToken } from "@/app/(auth)/_lib/authStorage";
 
 function DashboardInner({ children }: { children: React.ReactNode }) {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -29,8 +29,24 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 
       if (access) {
         setAuthTokens({ access, refresh: refresh || undefined });
-        // Remove tokens from the URL.
-        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+            // Remove tokens from the URL immediately and again shortly after
+            const cleanUrl = window.location.pathname + window.location.search;
+            try {
+              window.history.replaceState({}, document.title, cleanUrl);
+            } catch (e) {
+              // ignore
+            }
+            // Defensive: ensure fragment is cleared in case some other script re-adds it
+            setTimeout(() => {
+              try {
+                if (window.location.hash) {
+                  window.history.replaceState({}, document.title, cleanUrl);
+                  window.location.hash = '';
+                }
+              } catch (e) {
+                // ignore
+              }
+            }, 150);
       }
     }
 
@@ -67,6 +83,18 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       setDesktopSidebarOpen(!desktopSidebarOpen);
     }
   };
+
+  // Defensive client-side redirect: if we don't have an access token, redirect to signin
+  useEffect(() => {
+    const tok = getAccessToken();
+    if (!tok) {
+      try {
+        window.location.replace('/signin');
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, []);
 
   if (!authReady) {
     return (

@@ -2,8 +2,22 @@
 
 const plans = [
   {
-    name: "Monthly Plan",
+    name: "Weekly",
     price: "$7.99",
+    period: "/week",
+    features: [
+      { text: "Unlimited AI questions", included: true },
+      { text: "All AI models (GPT-4o, Claude, Gemini)", included: true },
+      { text: "Photo to Solution", included: true },
+      { text: "Unlimited history", included: true },
+      { text: "Priority support", included: true },
+    ],
+    buttonText: "Get Started",
+    buttonStyle: "outline" as const,
+  },
+  {
+    name: "Monthly",
+    price: "$19.99",
     period: "/month",
     features: [
       { text: "Unlimited AI questions", included: true },
@@ -11,29 +25,13 @@ const plans = [
       { text: "Photo to Solution", included: true },
       { text: "Unlimited history", included: true },
       { text: "Priority support", included: true },
-      { text: "Advanced analytics", included: true },
     ],
-    buttonText: "Subscribe Monthly",
-    buttonStyle: "outline" as const,
-  },
-  {
-    name: "3-Month Plan",
-    price: "$19.99",
-    period: "/quarter",
-    features: [
-      { text: "Unlimited AI questions", included: true },
-      { text: "All AI models (GPT-4o, Claude, Gemini)", included: true },
-      { text: "Photo to Solution", included: true },
-      { text: "Unlimited history", included: true },
-      { text: "Priority support", included: true },
-      { text: "Advanced analytics", included: true },
-    ],
-    buttonText: "Subscribe Quarterly",
+    buttonText: "Upgrade to Pro",
     buttonStyle: "filled" as const,
     popular: true,
   },
   {
-    name: "Annual Plan",
+    name: "Yearly",
     price: "$59.99",
     period: "/year",
     features: [
@@ -42,9 +40,8 @@ const plans = [
       { text: "Photo to Solution", included: true },
       { text: "Unlimited history", included: true },
       { text: "Priority support", included: true },
-      { text: "Advanced analytics", included: true },
     ],
-    buttonText: "Subscribe Annually",
+    buttonText: "Save Big",
     buttonStyle: "outline" as const,
   },
 ];

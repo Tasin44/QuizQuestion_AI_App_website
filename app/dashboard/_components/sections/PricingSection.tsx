@@ -1,22 +1,62 @@
 "use client";
 const plans = [
-  { name: "Free", price: "$0", period: "/month", features: [
-    { text: "5 AI questions per day", ok: true }, { text: "Basic AI models", ok: true }, { text: "Photo to Solution", ok: true },
-    { text: "Limited history", ok: true }, { text: "Priority support", ok: false }, { text: "Unlimited questions", ok: false },
-  ], btn: "Current Plan", filled: false },
-  { name: "Pro", price: "$29", period: "/month", features: [
-    { text: "Unlimited AI questions", ok: true }, { text: "All AI models (GPT-4o, Claude, Gemini)", ok: true }, { text: "Photo to Solution", ok: true },
-    { text: "Unlimited history", ok: true }, { text: "Priority support", ok: true }, { text: "Advanced analytics", ok: true },
-  ], btn: "Upgrade to Pro", filled: true, popular: true },
+  { 
+    name: "Weekly", 
+    price: "$7.99", 
+    period: "/week", 
+    features: [
+      { text: "Unlimited AI questions", ok: true }, 
+      { text: "All AI models (GPT-4o, Claude, Gemini)", ok: true }, 
+      { text: "Photo to Solution", ok: true },
+      { text: "Unlimited history", ok: true }, 
+      { text: "Priority support", ok: true },
+    ], 
+    btn: "Get Started", 
+    filled: false 
+  },
+  { 
+    name: "Monthly", 
+    price: "$19.99", 
+    period: "/month", 
+    features: [
+      { text: "Unlimited AI questions", ok: true }, 
+      { text: "All AI models (GPT-4o, Claude, Gemini)", ok: true }, 
+      { text: "Photo to Solution", ok: true },
+      { text: "Unlimited history", ok: true }, 
+      { text: "Priority support", ok: true },
+    ], 
+    btn: "Upgrade to Pro", 
+    filled: true, 
+    popular: true 
+  },
+  { 
+    name: "Yearly", 
+    price: "$59.99", 
+    period: "/year", 
+    features: [
+      { text: "Unlimited AI questions", ok: true }, 
+      { text: "All AI models (GPT-4o, Claude, Gemini)", ok: true }, 
+      { text: "Photo to Solution", ok: true },
+      { text: "Unlimited history", ok: true }, 
+      { text: "Priority support", ok: true },
+    ], 
+    btn: "Save Big", 
+    filled: false 
+  },
 ];
 export default function PricingSection() {
   return (
-    <section id="pricing" style={{ padding: "80px 20px", textAlign: "center", maxWidth: "900px", margin: "0 auto" }}>
+    <section id="pricing" style={{ padding: "80px 20px", textAlign: "center", maxWidth: "1100px", margin: "0 auto" }}>
       <style>{`
         .pricing-grid {
           display: grid;
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: repeat(3, 1fr);
           gap: 24px;
+        }
+        @media (max-width: 1024px) {
+          .pricing-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
         }
         @media (max-width: 640px) {
           .pricing-grid {
