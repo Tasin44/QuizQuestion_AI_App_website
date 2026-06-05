@@ -911,10 +911,7 @@ export default function DashboardPage() {
 
         {/* Free questions (only when no active chat) */}
         {!hasChat && (
-          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "13px", margin: 0 }}>
-            3 free questions remaining today.{" "}
-            <span style={{ color: "#7b68ee", cursor: "pointer", fontWeight: 500 }}>Upgrade</span>
-          </p>
+          <></>
         )}
       </section>
 
