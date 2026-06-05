@@ -2,7 +2,7 @@
 
 const plans = [
   {
-    name: "Monthly",
+    name: "Monthly Plan",
     price: "$7.99",
     period: "/month",
     features: [
@@ -11,31 +11,29 @@ const plans = [
       { text: "Photo to Solution", included: true },
       { text: "Unlimited history", included: true },
       { text: "Priority support", included: true },
-      { text: "Cancel anytime", included: true },
+      { text: "Advanced analytics", included: true },
     ],
     buttonText: "Subscribe Monthly",
-    buttonStyle: "filled" as const,
-    savings: null,
+    buttonStyle: "outline" as const,
   },
   {
-    name: "3 Months",
+    name: "3-Month Plan",
     price: "$19.99",
-    period: "/quarterly",
+    period: "/quarter",
     features: [
       { text: "Unlimited AI questions", included: true },
       { text: "All AI models (GPT-4o, Claude, Gemini)", included: true },
       { text: "Photo to Solution", included: true },
       { text: "Unlimited history", included: true },
       { text: "Priority support", included: true },
-      { text: "Cancel anytime", included: true },
+      { text: "Advanced analytics", included: true },
     ],
     buttonText: "Subscribe Quarterly",
     buttonStyle: "filled" as const,
-    savings: "Save 17%",
     popular: true,
   },
   {
-    name: "Annual",
+    name: "Annual Plan",
     price: "$59.99",
     period: "/year",
     features: [
@@ -44,11 +42,10 @@ const plans = [
       { text: "Photo to Solution", included: true },
       { text: "Unlimited history", included: true },
       { text: "Priority support", included: true },
-      { text: "Cancel anytime", included: true },
+      { text: "Advanced analytics", included: true },
     ],
-    buttonText: "Subscribe Yearly",
-    buttonStyle: "filled" as const,
-    savings: "Save 37%",
+    buttonText: "Subscribe Annually",
+    buttonStyle: "outline" as const,
   },
 ];
 
@@ -58,15 +55,28 @@ export default function PricingSection() {
       style={{
         padding: "80px 40px",
         textAlign: "center",
-        maxWidth: "1100px",
+        maxWidth: "1200px",
         margin: "0 auto",
       }}
     >
-      <h2 style={{ color: "#ffffff", fontSize: "34px", fontWeight: 700, margin: "0 0 50px" }}>
+      <h2
+        style={{
+          color: "#ffffff",
+          fontSize: "34px",
+          fontWeight: 700,
+          margin: "0 0 50px",
+        }}
+      >
         Choose Your Subscription Plan
       </h2>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "24px",
+        }}
+      >
         {plans.map((plan) => (
           <div
             key={plan.name}
@@ -107,57 +117,74 @@ export default function PricingSection() {
               </div>
             )}
 
-            {plan.savings && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "-12px",
-                  left: "24px",
-                  backgroundColor: "#22c55e",
-                  color: "#fff",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  padding: "4px 14px",
-                  borderRadius: "20px",
-                  letterSpacing: "0.3px",
-                }}
-              >
-                {plan.savings}
-              </div>
-            )}
-
-            <h3 style={{ color: "rgba(255,255,255,0.5)", fontSize: "15px", fontWeight: 600, margin: "0 0 6px" }}>
+            <h3
+              style={{
+                color: "rgba(255,255,255,0.5)",
+                fontSize: "15px",
+                fontWeight: 600,
+                margin: "0 0 6px",
+              }}
+            >
               {plan.name}
             </h3>
-            <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "8px" }}>
-              <span style={{ color: "#ffffff", fontSize: "40px", fontWeight: 700 }}>{plan.price}</span>
-              <span style={{ color: "rgba(255,255,255,0.35)", fontSize: "14px" }}>{plan.period}</span>
-            </div>
-            
-            {plan.name === "Annual" && (
-              <div style={{ marginBottom: "28px" }}>
-                <span style={{ color: "#22c55e", fontSize: "12px", fontWeight: 500 }}>
-                  Just $5.00/month
-                </span>
-              </div>
-            )}
-            {plan.name === "3 Months" && (
-              <div style={{ marginBottom: "28px" }}>
-                <span style={{ color: "#22c55e", fontSize: "12px", fontWeight: 500 }}>
-                  Just $6.66/month
-                </span>
-              </div>
-            )}
-            {plan.name === "Monthly" && (
-              <div style={{ marginBottom: "28px" }}></div>
-            )}
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "32px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: "4px",
+                marginBottom: "28px",
+              }}
+            >
+              <span
+                style={{
+                  color: "#ffffff",
+                  fontSize: "40px",
+                  fontWeight: 700,
+                }}
+              >
+                {plan.price}
+              </span>
+              <span
+                style={{
+                  color: "rgba(255,255,255,0.35)",
+                  fontSize: "14px",
+                }}
+              >
+                {plan.period}
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "14px",
+                marginBottom: "32px",
+              }}
+            >
               {plan.features.map((f) => (
-                <div key={f.text} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <div
+                  key={f.text}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                  }}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#22c55e"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
+
                   <span
                     style={{
                       color: "rgba(255,255,255,0.65)",
@@ -179,17 +206,37 @@ export default function PricingSection() {
                 fontWeight: 600,
                 cursor: "pointer",
                 transition: "all 0.2s ease",
-                backgroundColor: "#4F46E5",
-                border: "none",
-                color: "#ffffff",
+                ...(plan.buttonStyle === "filled"
+                  ? {
+                      backgroundColor: "#4F46E5",
+                      border: "none",
+                      color: "#ffffff",
+                    }
+                  : {
+                      backgroundColor: "transparent",
+                      border: "1px solid rgba(255,255,255,0.15)",
+                      color: "rgba(255,255,255,0.8)",
+                    }),
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#6366f1";
-                e.currentTarget.style.boxShadow = "0 4px 20px rgba(79,70,229,0.3)";
+                if (plan.buttonStyle === "filled") {
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 20px rgba(79,70,229,0.3)";
+                } else {
+                  e.currentTarget.style.borderColor =
+                    "rgba(255,255,255,0.3)";
+                  e.currentTarget.style.color = "#ffffff";
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#4F46E5";
-                e.currentTarget.style.boxShadow = "none";
+                if (plan.buttonStyle === "filled") {
+                  e.currentTarget.style.boxShadow = "none";
+                } else {
+                  e.currentTarget.style.borderColor =
+                    "rgba(255,255,255,0.15)";
+                  e.currentTarget.style.color =
+                    "rgba(255,255,255,0.8)";
+                }
               }}
             >
               {plan.buttonText}
