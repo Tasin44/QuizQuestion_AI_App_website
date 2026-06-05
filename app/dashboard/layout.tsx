@@ -59,7 +59,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
     return () => { document.body.style.overflow = ""; };
   }, [sidebarOpen]);
 
-<<<<<<< HEAD
+
   const handleMenuToggle = () => {
     if (window.innerWidth <= 768) {
       setSidebarOpen(!sidebarOpen);
@@ -67,7 +67,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       setDesktopSidebarOpen(!desktopSidebarOpen);
     }
   };
-=======
+
   if (!authReady) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#0A0A0F", color: "rgba(255,255,255,0.75)" }}>
@@ -75,7 +75,6 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
->>>>>>> 3f8c83e (server local changes backup)
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "#0A0A0F" }}>
