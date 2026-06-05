@@ -7,12 +7,36 @@ import Footer from "@/app/(dashboard)/_components/sections/Footer";
 import { ChatProvider, useChatContext } from "./_components/ChatContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { setAuthTokens } from "@/app/(auth)/_lib/authStorage";
 
 function DashboardInner({ children }: { children: React.ReactNode }) {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const { hasChat } = useChatContext();
+
+  const [authReady, setAuthReady] = useState(false);
+
+  // If we came from social login, tokens are in the URL fragment: #access=...&refresh=...
+  // Capture them before any authenticated API calls run (prevents 401 right after Google login).
+  useEffect(() => {
+    const hash = window.location.hash || "";
+    if (hash.startsWith("#")) {
+      const params = new URLSearchParams(hash.slice(1));
+      const access = params.get("access") || "";
+      const refresh = params.get("refresh") || "";
+
+      if (access) {
+        setAuthTokens({ access, refresh: refresh || undefined });
+        // Remove tokens from the URL.
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+      }
+    }
+
+    setAuthReady(true);
+  }, []);
+
 
   // Close sidebar on route change or resize to desktop
   useEffect(() => {
@@ -35,6 +59,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
     return () => { document.body.style.overflow = ""; };
   }, [sidebarOpen]);
 
+<<<<<<< HEAD
   const handleMenuToggle = () => {
     if (window.innerWidth <= 768) {
       setSidebarOpen(!sidebarOpen);
@@ -42,6 +67,15 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       setDesktopSidebarOpen(!desktopSidebarOpen);
     }
   };
+=======
+  if (!authReady) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#0A0A0F", color: "rgba(255,255,255,0.75)" }}>
+        Loading...
+      </div>
+    );
+  }
+>>>>>>> 3f8c83e (server local changes backup)
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "#0A0A0F" }}>
