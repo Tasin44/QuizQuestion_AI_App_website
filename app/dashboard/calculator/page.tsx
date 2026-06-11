@@ -110,7 +110,7 @@ export default function CalculatorPage() {
     mutationFn: () => {
       let apiModel: ChatAskModel = "gpt";
       if (model === "gemini-pro" || model === "gemini") apiModel = "gemini";
-      else if (model === "claude-6" || model === "claude") apiModel = "claude";
+      else if (model.startsWith("claude") || model === "claude") apiModel = "claude";
       return askChat(`Solve and explain this math problem step-by-step in a clear, educational way: ${expression}`, apiModel);
     },
     onSuccess: (data) => setResponse(data.data.content || ""),

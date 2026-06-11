@@ -96,3 +96,15 @@ export function clearResetSecret() {
   if (!isBrowser()) return;
   localStorage.removeItem(RESET_SECRET_KEY);
 }
+
+export function clearAuthTokens() {
+  if (!isBrowser()) return;
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  
+  // Clear cookies by setting max-age to 0
+  document.cookie = `${ACCESS_TOKEN_KEY}=; Max-Age=0; Path=/; SameSite=Lax`;
+  document.cookie = `${REFRESH_TOKEN_KEY}=; Max-Age=0; Path=/; SameSite=Lax`;
+  document.cookie = "token=; Max-Age=0; Path=/; SameSite=Lax";
+  document.cookie = "access=; Max-Age=0; Path=/; SameSite=Lax";
+}

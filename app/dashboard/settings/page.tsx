@@ -9,36 +9,55 @@ import {
   getChildScans, 
   getChildChats, 
   type ChildScanItem, 
-  type ChildChatItem 
+  type ChildChatItem,
+  deleteAllChatHistory,
+  getChatHistory
 } from "@/app/(auth)/_lib/api";
 import { getAccessToken } from "@/app/(auth)/_lib/authStorage";
 import ModelSelector from "../_components/ModelSelector";
-import { Sparkles } from "lucide-react";
+import { 
+  Sparkles, 
+  Calculator, 
+  Atom, 
+  FlaskConical, 
+  Dna, 
+  BookOpen, 
+  Laptop, 
+  PenTool, 
+  LineChart,
+  Zap,
+  Scale,
+  GraduationCap,
+  Download,
+  Trash2,
+  Eraser
+} from "lucide-react";
 
 const aiModels = [
   { id: "auto", name: "Auto", badge: "Smart", badgeColor: "#22c55e", desc: "Automatically picks the best model for your question", image: "/images/ai-logo.png" },
   { id: "qq-ai", name: "QQ AI", badge: "Quick", badgeColor: "#7b68ee", desc: "Fast & accurate answers powered by Quiz Question AI", image: "/images/ai-logo.png" },
   { id: "gpt-4o", name: "GPT-4o", badge: "OpenAI", badgeColor: "#22c55e", desc: "Best for complex reasoning & long answers", image: "/images/gpt.png" },
   { id: "gemini-pro", name: "Gemini Pro", badge: "Google", badgeColor: "#4285f4", desc: "Excellent for math, code, and multimodal tasks", image: "/images/gemini.png" },
-  { id: "claude-6", name: "Claude 4.6", badge: "Anthropic", badgeColor: "#f59e0b", desc: "Great for writing, analysis & nuanced content", image: "/images/claude.png" },
+  { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", badge: "Anthropic", badgeColor: "#f59e0b", desc: "Balanced for speed, coding, and nuanced reasoning", image: "/images/claude.png" },
+  { id: "claude-opus-4-6", name: "Claude Opus 4.6", badge: "Anthropic", badgeColor: "#f59e0b", desc: "Best for complex academic reasoning and deep research", image: "/images/claude.png" },
 ];
 
 const responseStyles = [
-  { id: "concise", name: "Concise", desc: "Short & to the point", icon: "⚡" },
-  { id: "balanced", name: "Balanced", desc: "Clear with context", icon: "⚖️" },
-  { id: "detailed", name: "Detailed", desc: "Full explanation", icon: "📖" },
-  { id: "formal", name: "Formal", desc: "Academic tone", icon: "🎓" },
+  { id: "concise", name: "Concise", desc: "Short & to the point", icon: Zap },
+  { id: "balanced", name: "Balanced", desc: "Clear with context", icon: Scale },
+  { id: "detailed", name: "Detailed", desc: "Full explanation", icon: BookOpen },
+  { id: "formal", name: "Formal", desc: "Academic tone", icon: GraduationCap },
 ];
 
 const subjects = [
-  { id: "mathematics", name: "Mathematics", icon: "📐" },
-  { id: "physics", name: "Physics", icon: "⚛️" },
-  { id: "chemistry", name: "Chemistry", icon: "⚗️" },
-  { id: "biology", name: "Biology", icon: "🧬" },
-  { id: "history", name: "History", icon: "📚" },
-  { id: "cs", name: "CS", icon: "💻" },
-  { id: "literature", name: "Literature", icon: "📝" },
-  { id: "economics", name: "Economics", icon: "📊" },
+  { id: "mathematics", name: "Mathematics", icon: Calculator },
+  { id: "physics", name: "Physics", icon: Atom },
+  { id: "chemistry", name: "Chemistry", icon: FlaskConical },
+  { id: "biology", name: "Biology", icon: Dna },
+  { id: "history", name: "History", icon: BookOpen },
+  { id: "cs", name: "CS", icon: Laptop },
+  { id: "literature", name: "Literature", icon: PenTool },
+  { id: "economics", name: "Economics", icon: LineChart },
 ];
 
 const cardStyle: React.CSSProperties = {
@@ -160,6 +179,98 @@ export default function SettingsPage() {
   const [activityError, setActivityError] = useState("");
 
   const queryClient = useQueryClient();
+
+  const [isExporting, setIsExporting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleExportData = async () => {
+    setIsExporting(true);
+    try {
+      const response = await getChatHistory();
+      if (response && response.success && response.data) {
+        const history = response.data;
+        if (history.length === 0) {
+          toast.info("No chat history to export.");
+          return;
+        }
+        
+        let fileContent = `=== QUIZ QUESTION AI CHAT HISTORY ===\n`;
+        fileContent += `Exported on: ${new Date().toLocaleString()}\n\n`;
+        
+        history.forEach((item, index) => {
+          fileContent += `----------------------------------------\n`;
+          fileContent += `Chat #${index + 1}\n`;
+          fileContent += `Date: ${new Date(item.created_at).toLocaleString()}\n`;
+          fileContent += `Question: ${item.prompt}\n\n`;
+          fileContent += `Answer:\n${item.ai_response}\n`;
+          if (item.image_url) {
+            fileContent += `Image Attachment: ${item.image_url}\n`;
+          }
+          if (item.file_url) {
+            fileContent += `File Attachment: ${item.file_url}\n`;
+          }
+          fileContent += `----------------------------------------\n\n`;
+        });
+        
+        const blob = new Blob([fileContent], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `quiz_question_ai_chat_history_${new Date().toISOString().slice(0, 10)}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        toast.success("Chat history exported successfully!");
+      } else {
+        toast.error("Failed to retrieve chat history for export.");
+      }
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "Failed to export chat history.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleDeleteAllChatHistory = async () => {
+    if (!window.confirm("Are you sure you want to delete all chat history? This action cannot be undone.")) {
+      return;
+    }
+    setIsDeleting(true);
+    try {
+      const res = await deleteAllChatHistory();
+      if (res.success) {
+        toast.success("All ask history deleted successfully.");
+        queryClient.invalidateQueries({ queryKey: ["chatHistory"] });
+      } else {
+        toast.error(res.message || "Failed to delete chat history.");
+      }
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "Failed to delete chat history.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleClearCache = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("preferred_model");
+      localStorage.removeItem("response_style");
+      localStorage.removeItem("difficulty_level");
+      localStorage.removeItem("selected_subjects");
+      
+      setSelectedModel("gpt-4o");
+      setAskModel("gpt-4o");
+      setResponseStyle("balanced");
+      setDifficulty(50);
+      setSelectedSubjects(["mathematics", "physics"]);
+      
+      toast.success("Cache & local preferences cleared successfully!");
+    }
+  };
 
   const profileQuery = useQuery({
     queryKey: ["profile"],
@@ -555,8 +666,9 @@ export default function SettingsPage() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
                   {responseStyles.map((rs) => {
                     const isActive = rs.id === responseStyle;
+                    const IconComponent = rs.icon;
                     return (
-                      <div
+                       <div
                         key={rs.id}
                         onClick={() => setResponseStyle(rs.id)}
                         style={{
@@ -567,7 +679,7 @@ export default function SettingsPage() {
                         }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
-                          <span style={{ fontSize: "13px" }}>{rs.icon}</span>
+                          <IconComponent size={14} style={{ color: isActive ? "#7b68ee" : "rgba(255,255,255,0.4)" }} />
                           <span style={{ color: isActive ? "#fff" : "rgba(255,255,255,0.55)", fontSize: "12px", fontWeight: 600 }}>{rs.name}</span>
                         </div>
                         <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "10px", margin: "2px 0 0", paddingLeft: "20px" }}>{rs.desc}</p>
@@ -599,14 +711,38 @@ export default function SettingsPage() {
               <div style={{ marginBottom: "22px" }}>
                 <h3 style={{ color: "rgba(255,255,255,0.6)", fontSize: "12px", fontWeight: 600, margin: "0 0 10px" }}>Subject Focus Area</h3>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                  <div
+                    onClick={() => {
+                      const allIds = subjects.map((s) => s.id);
+                      const areAllSelected = selectedSubjects.length === subjects.length;
+                      if (areAllSelected) {
+                        setSelectedSubjects([]);
+                      } else {
+                        setSelectedSubjects(allIds);
+                      }
+                    }}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "6px",
+                      padding: "6px 12px", borderRadius: "20px",
+                      backgroundColor: selectedSubjects.length === subjects.length ? "rgba(79,70,229,0.12)" : "rgba(255,255,255,0.02)",
+                      border: selectedSubjects.length === subjects.length ? "1px solid rgba(79,70,229,0.3)" : "1px solid rgba(255,255,255,0.06)",
+                      color: selectedSubjects.length === subjects.length ? "#fff" : "rgba(255,255,255,0.45)",
+                      fontSize: "12px", fontWeight: 500, cursor: "pointer", transition: "all 0.2s ease",
+                    }}
+                  >
+                    <Sparkles size={13} style={{ color: selectedSubjects.length === subjects.length ? "#a855f7" : "rgba(255,255,255,0.4)" }} />
+                    <span>All</span>
+                    {selectedSubjects.length === subjects.length && <span style={{ fontSize: "10px", color: "#7b68ee" }}>✓</span>}
+                  </div>
                   {subjects.map((s) => {
                     const isSelected = selectedSubjects.includes(s.id);
+                    const IconComponent = s.icon;
                     return (
                       <div
                         key={s.id}
                         onClick={() => toggleSubject(s.id)}
                         style={{
-                          display: "flex", alignItems: "center", gap: "5px",
+                          display: "flex", alignItems: "center", gap: "6px",
                           padding: "6px 12px", borderRadius: "20px",
                           backgroundColor: isSelected ? "rgba(79,70,229,0.12)" : "rgba(255,255,255,0.02)",
                           border: isSelected ? "1px solid rgba(79,70,229,0.3)" : "1px solid rgba(255,255,255,0.06)",
@@ -614,7 +750,7 @@ export default function SettingsPage() {
                           fontSize: "12px", fontWeight: 500, cursor: "pointer", transition: "all 0.2s ease",
                         }}
                       >
-                        <span>{s.icon}</span>
+                        <IconComponent size={13} style={{ color: isSelected ? "#7b68ee" : "rgba(255,255,255,0.4)" }} />
                         <span>{s.name}</span>
                         {isSelected && <span style={{ fontSize: "10px", color: "#7b68ee" }}>✓</span>}
                       </div>
@@ -717,33 +853,78 @@ export default function SettingsPage() {
 
             {/* Explore Your Data */}
             <div style={cardStyle}>
-              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 16px" }}>Explore your Data</h2>
-              <div style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "13px 16px", backgroundColor: "rgba(255,255,255,0.02)",
-                border: "1px solid rgba(255,255,255,0.04)", borderRadius: "12px", marginBottom: "14px",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.8">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                  </svg>
-                  <div>
-                    <span style={{ color: "#fff", fontSize: "13px", fontWeight: 500 }}>Chat History</span>
-                    <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "11px", marginLeft: "8px" }}>156 conversations · 2.6 MB</span>
-                  </div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "11px" }}>~1.2 MB</span>
-                  <Toggle active={chatHistoryExport} onClick={() => setChatHistoryExport(!chatHistoryExport)} />
-                </div>
+              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 16px" }}>Data Control</h2>
+              
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+                {/* Export Data Button */}
+                <button 
+                  onClick={handleExportData}
+                  disabled={isExporting}
+                  style={{
+                    padding: "10px 18px",
+                    background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
+                    border: "none", borderRadius: "10px", color: "#fff",
+                    fontSize: "13px", fontWeight: 600, cursor: isExporting ? "not-allowed" : "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                    opacity: isExporting ? 0.7 : 1,
+                  }}
+                >
+                  <Download size={14} />
+                  <span>{isExporting ? "Exporting..." : "Export Selected Data"}</span>
+                </button>
+
+                {/* Delete Chat History Button */}
+                <button 
+                  onClick={handleDeleteAllChatHistory}
+                  disabled={isDeleting}
+                  style={{
+                    padding: "10px 18px",
+                    backgroundColor: "rgba(239, 68, 68, 0.08)",
+                    border: "1px solid rgba(239, 68, 68, 0.2)", 
+                    borderRadius: "10px", color: "#ef4444",
+                    fontSize: "13px", fontWeight: 600, cursor: isDeleting ? "not-allowed" : "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                    transition: "all 0.2s ease",
+                    opacity: isDeleting ? 0.7 : 1,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
+                    e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.4)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(239, 68, 68, 0.08)";
+                    e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.2)";
+                  }}
+                >
+                  <Trash2 size={14} />
+                  <span>{isDeleting ? "Deleting..." : "Delete All Chat History"}</span>
+                </button>
+
+                {/* Clear Cache Button */}
+                <button 
+                  onClick={handleClearCache}
+                  style={{
+                    padding: "10px 18px",
+                    backgroundColor: "rgba(255, 255, 255, 0.02)",
+                    border: "1px solid rgba(255, 255, 255, 0.06)",
+                    borderRadius: "10px", color: "rgba(255, 255, 255, 0.75)",
+                    fontSize: "13px", fontWeight: 600, cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.06)";
+                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.12)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.02)";
+                    e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.06)";
+                  }}
+                >
+                  <Eraser size={14} />
+                  <span>Clear Cache</span>
+                </button>
               </div>
-              <button style={{
-                width: "100%", padding: "13px",
-                background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
-                border: "none", borderRadius: "10px", color: "#fff",
-                fontSize: "13px", fontWeight: 600, cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
-              }}>⬇ Export Selected Data</button>
             </div>
 
           </div>

@@ -61,7 +61,7 @@ export default function TopNavbar({ onLogout, onMenuToggle, isSidebarCollapsed }
           backgroundColor: "#0A0A0F",
           position: "sticky",
           top: 0,
-          zIndex: 200,
+          zIndex: 100,
           gap: "12px",
         }}
       >

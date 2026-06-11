@@ -322,6 +322,21 @@ export function getChatHistory(): Promise<ChatHistoryResponse> {
     });
 }
 
+export function deleteAllChatHistory(): Promise<{ success: boolean; message: string }> {
+  const token = getStoredAccessToken();
+  return fetch(`${API_BASE_URL}/chat/ask/`, {
+    method: "DELETE",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+    .then(async (res) => {
+      const data = await res.json().catch(() => null);
+      if (!res.ok || data?.success === false) {
+        throw new ApiError(data?.message || "Failed to delete history", data?.data || null);
+      }
+      return data;
+    });
+}
+
 export type ChildScanItem = {
   id: string;
   subject: string;

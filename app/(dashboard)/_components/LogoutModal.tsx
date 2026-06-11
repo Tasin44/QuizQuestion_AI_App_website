@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import { clearAuthTokens } from "@/app/(auth)/_lib/authStorage";
 
 interface LogoutModalProps {
   onClose: () => void;
@@ -10,6 +11,7 @@ export default function LogoutModal({ onClose }: LogoutModalProps) {
 
   const handleLogout = () => {
     onClose();
+    clearAuthTokens();
     router.push("/signin");
   };
 

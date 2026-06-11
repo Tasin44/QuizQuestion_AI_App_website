@@ -86,10 +86,18 @@ const models = [
     Logo: GPTLogo, // Use gpt.png
   },
   {
-    id: "claude-6",
-    name: "Claude 4.6",
-    desc: "Math",
-    color: "#D4A574",
+    id: "claude-sonnet-4-6",
+    name: "Claude Sonnet 4.6",
+    desc: "Nuanced",
+    color: "#f59e0b",
+    apiModel: "claude",
+    Logo: ClaudeLogo,
+  },
+  {
+    id: "claude-opus-4-6",
+    name: "Claude Opus 4.6",
+    desc: "Research",
+    color: "#f59e0b",
     apiModel: "claude",
     Logo: ClaudeLogo,
   },

@@ -65,6 +65,17 @@ function TypingIndicator() {
   );
 }
 
+const preprocessMarkdown = (content: string) => {
+  if (!content) return "";
+  // Replace block math delimiters \[ \] with $$
+  let processed = content
+    .replace(/\\+\[/g, "$$$$\n")
+    .replace(/\\+\]/g, "\n$$$$")
+    .replace(/\\+\(/g, "$$")
+    .replace(/\\+\)/g, "$$");
+  return processed;
+};
+
 /* ───── Markdown components for react-markdown ───── */
 const markdownComponents = {
   h1: ({ children, ...props }: any) => <h2 style={{ fontSize: "19px", fontWeight: 700, margin: "20px 0 10px", color: "#fff" }} {...props}>{children}</h2>,
@@ -119,7 +130,7 @@ export default function ClientDashboard() {
     mutationFn: (params: { msg: string; mdl: string; img?: File; doc?: File }) => {
       let apiModel: ChatAskModel = "gpt";
       if (params.mdl === "gemini-pro" || params.mdl === "gemini") apiModel = "gemini";
-      else if (params.mdl === "claude-6" || params.mdl === "claude") apiModel = "claude";
+      else if (params.mdl.startsWith("claude") || params.mdl === "claude") apiModel = "claude";
       return askChatFormData({
         message: params.msg,
         model: apiModel,
@@ -237,7 +248,7 @@ export default function ClientDashboard() {
                 <div style={{ maxWidth: "75%", display: "flex", flexDirection: "column", gap: "4px", textAlign: "left" }}>
                   <div style={{ padding: "14px 18px", borderRadius: "18px", backgroundColor: msg.role === "user" ? "#4F46E5" : "#15151f", border: msg.role === "assistant" ? "1px solid rgba(255,255,255,0.07)" : "none", color: "#fff" }}>
                   {msg.role === "assistant" ? (
-                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={markdownComponents}>{msg.content}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={markdownComponents}>{preprocessMarkdown(msg.content)}</ReactMarkdown>
                   ) : (
                     <>
                       {msg.attachments && msg.attachments.length > 0 && (
@@ -308,7 +319,7 @@ export default function ClientDashboard() {
               setModel(val);
               localStorage.setItem("preferred_model", val);
             }} 
-            direction="up" 
+            direction="down" 
           />
           <button onClick={handleSend} disabled={askMutation.isPending} style={{ background: "linear-gradient(135deg, #6c5ce7, #7b68ee)", border: "none", borderRadius: "10px", padding: "8px 16px", color: "#fff", cursor: "pointer" }}>Send</button>
           </div>

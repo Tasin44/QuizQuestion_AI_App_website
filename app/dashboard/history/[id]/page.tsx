@@ -62,6 +62,17 @@ function TypingIndicator() {
   );
 }
 
+const preprocessMarkdown = (content: string) => {
+  if (!content) return "";
+  // Replace block math delimiters \[ \] with $$
+  let processed = content
+    .replace(/\\+\[/g, "$$$$\n")
+    .replace(/\\+\]/g, "\n$$$$")
+    .replace(/\\+\(/g, "$$")
+    .replace(/\\+\)/g, "$$");
+  return processed;
+};
+
 /* ───── Markdown components for react-markdown ───── */
 const mdComponents = {
   h1: ({ children, ...p }: React.ComponentProps<"h1">) => <h2 style={{ fontSize: "19px", fontWeight: 700, margin: "20px 0 10px", color: "#fff" }} {...p}>{children}</h2>,
@@ -177,7 +188,7 @@ export default function ChatDetailPage() {
     mutationFn: (params: { msg: string; mdl: string; img?: File; doc?: File }) => {
       let apiModel: ChatAskModel = "gpt";
       if (params.mdl === "gemini-pro" || params.mdl === "gemini") apiModel = "gemini";
-      else if (params.mdl === "claude-6" || params.mdl === "claude") apiModel = "claude";
+      else if (params.mdl.startsWith("claude") || params.mdl === "claude") apiModel = "claude";
       return askChatFormData({
         message: params.msg,
         model: apiModel,
@@ -426,7 +437,7 @@ export default function ChatDetailPage() {
                 >
                   {msg.role === "assistant" ? (
                     <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={mdComponents}>
-                      {msg.content}
+                      {preprocessMarkdown(msg.content)}
                     </ReactMarkdown>
                   ) : msg.content}
                 </div>

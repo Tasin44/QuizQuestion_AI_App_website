@@ -195,8 +195,6 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
             overflowX: "hidden",
             display: "flex",
             flexDirection: "column",
-            position: "relative",
-            zIndex: 150,
           }}
         >
           <div style={{ flex: 1 }}>

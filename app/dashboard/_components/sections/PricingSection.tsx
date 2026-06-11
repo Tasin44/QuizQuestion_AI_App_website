@@ -1,7 +1,7 @@
 "use client";
 const plans = [
   { 
-    name: "Weekly", 
+    name: "Monthly Plan", 
     price: "$7.99", 
     period: "/week", 
     features: [
@@ -15,9 +15,9 @@ const plans = [
     filled: false 
   },
   { 
-    name: "Monthly", 
+    name: "3-Monthly  Plan", 
     price: "$19.99", 
-    period: "/month", 
+    period: "/3-months", 
     features: [
       { text: "Unlimited AI questions", ok: true }, 
       { text: "All AI models (GPT-4o, Claude, Gemini)", ok: true }, 
@@ -30,7 +30,7 @@ const plans = [
     popular: true 
   },
   { 
-    name: "Yearly", 
+    name: "Annual Plan", 
     price: "$59.99", 
     period: "/year", 
     features: [
