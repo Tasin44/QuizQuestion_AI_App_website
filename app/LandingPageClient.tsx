@@ -24,7 +24,9 @@ export default function LandingPageClient() {
     const ta = textareaRef.current;
     if (ta) {
       ta.style.height = "auto";
-      ta.style.height = Math.min(ta.scrollHeight, 140) + "px";
+      const targetHeight = ta.scrollHeight;
+      ta.style.height = Math.min(targetHeight, 140) + "px";
+      ta.style.overflowY = targetHeight > 140 ? "auto" : "hidden";
     }
   }, [message]);
 
@@ -98,40 +100,6 @@ export default function LandingPageClient() {
 
         {/* Right: Guest controls */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <button 
-            onClick={triggerAuthModal}
-            style={{
-              display: "flex", alignItems: "center", gap: "6px",
-              background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.08)",
-              borderRadius: "20px", padding: "6px 14px", color: "rgba(255, 255, 255, 0.85)",
-              fontSize: "13px", fontWeight: 500, cursor: "pointer", transition: "all 0.2s"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.08)";
-              e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.15)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.04)";
-              e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.08)";
-            }}
-          >
-            <Sparkles size={14} style={{ color: "#a855f7" }} />
-            Imagine
-          </button>
-
-          <button 
-            onClick={triggerAuthModal}
-            style={{
-              background: "none", border: "none", color: "rgba(255, 255, 255, 0.65)",
-              cursor: "pointer", padding: "8px", display: "flex", alignItems: "center",
-              transition: "color 0.2s"
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.color = "#ffffff"}
-            onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255, 255, 255, 0.65)"}
-          >
-            <Settings size={18} />
-          </button>
-
           <Link 
             href="/signin" 
             style={{
@@ -268,7 +236,9 @@ export default function LandingPageClient() {
               style={{
                 flex: 1, background: "none", border: "none", color: "#ffffff",
                 resize: "none", outline: "none", padding: "8px 0", fontSize: "14px",
-                lineHeight: "1.5", caretColor: "#7b68ee"
+                lineHeight: "1.5", caretColor: "#7b68ee",
+                scrollbarColor: "rgba(255, 255, 255, 0.15) transparent",
+                scrollbarWidth: "thin"
               }}
               rows={1}
             />
@@ -284,18 +254,19 @@ export default function LandingPageClient() {
             />
 
             {/* Send Button */}
-            <button
-              onClick={handleSend}
-              disabled={!message.trim()}
-              style={{
-                background: message.trim() ? "linear-gradient(135deg, #6c5ce7, #7b68ee)" : "rgba(255,255,255,0.04)",
-                border: "none", borderRadius: "10px", padding: "10px 18px", color: message.trim() ? "#ffffff" : "rgba(255,255,255,0.3)",
-                fontSize: "13px", fontWeight: 600, cursor: message.trim() ? "pointer" : "default",
-                display: "flex", alignItems: "center", gap: "6px", transition: "all 0.2s"
-              }}
-            >
-              Send
-            </button>
+            {message.trim() && (
+              <button
+                onClick={handleSend}
+                style={{
+                  background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
+                  border: "none", borderRadius: "10px", padding: "8px", color: "#ffffff",
+                  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                  minWidth: "36px", height: "36px", transition: "all 0.2s"
+                }}
+              >
+                <Send size={16} />
+              </button>
+            )}
           </div>
         </div>
       </main>

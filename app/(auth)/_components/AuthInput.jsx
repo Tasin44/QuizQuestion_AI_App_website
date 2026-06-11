@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { Eye, EyeOff } from "lucide-react";
 
 export function AuthInput({ label, type = "text", placeholder, value, onChange }) {
   const [show, setShow] = useState(false);
@@ -58,7 +58,7 @@ export function AuthInput({ label, type = "text", placeholder, value, onChange }
               justifyContent: "center",
             }}
           >
-            {show ? <FaEyeSlash /> : <FaEye />}
+            {show ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         )}
       </div>

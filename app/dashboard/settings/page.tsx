@@ -30,7 +30,11 @@ import {
   GraduationCap,
   Download,
   Trash2,
-  Eraser
+  Eraser,
+  Users,
+  Paperclip,
+  Eye,
+  EyeOff
 } from "lucide-react";
 
 const aiModels = [
@@ -158,6 +162,9 @@ export default function SettingsPage() {
   };
 
   const [parentalRole, setParentalRole] = useState("parent");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [chatHistoryExport, setChatHistoryExport] = useState(true);
   const [profileName, setProfileName] = useState("");
   const [profileEmail, setProfileEmail] = useState("");
@@ -560,19 +567,24 @@ export default function SettingsPage() {
               <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 18px" }}>Change Password</h2>
               <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                 {[
-                  { label: "Current Password", placeholder: "Password" },
-                  { label: "Password", placeholder: "Password" },
-                  { label: "Confirm Password", placeholder: "Confirm Password" },
+                  { label: "Current Password", placeholder: "Password", value: showCurrentPassword, setter: setShowCurrentPassword },
+                  { label: "Password", placeholder: "Password", value: showNewPassword, setter: setShowNewPassword },
+                  { label: "Confirm Password", placeholder: "Confirm Password", value: showConfirmPassword, setter: setShowConfirmPassword },
                 ].map((field) => (
                   <div key={field.label}>
                     <label style={labelStyle}>{field.label}</label>
                     <div style={{ position: "relative" }}>
-                      <input type="password" placeholder={field.placeholder} style={inputStyle} />
-                      <span style={{
-                        position: "absolute", right: "12px", top: "50%",
-                        transform: "translateY(-50%)", color: "rgba(255,255,255,0.3)",
-                        cursor: "pointer", fontSize: "13px",
-                      }}>👁</span>
+                      <input type={field.value ? "text" : "password"} placeholder={field.placeholder} style={inputStyle} />
+                      <span 
+                        onClick={() => field.setter(!field.value)}
+                        style={{
+                          position: "absolute", right: "12px", top: "50%",
+                          transform: "translateY(-50%)", color: "rgba(255,255,255,0.45)",
+                          cursor: "pointer", display: "flex", alignItems: "center"
+                        }}
+                      >
+                        {field.value ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -980,7 +992,7 @@ export default function SettingsPage() {
                 </div>
               ) : Object.keys(childScans).length === 0 && Object.keys(childChats).length === 0 ? (
                 <div style={{ textAlign: "center", padding: "60px 0", color: "rgba(255,255,255,0.4)" }}>
-                  <span style={{ fontSize: "40px", display: "block", marginBottom: "12px" }}>👥</span>
+                  <Users size={40} style={{ color: "rgba(255,255,255,0.25)", margin: "0 auto 12px", display: "block" }} />
                   <p style={{ fontSize: "14px", fontWeight: 500, margin: 0 }}>No active children accounts found.</p>
                   <p style={{ fontSize: "12px", margin: "6px 0 0" }}>Send a relation invite above to link your child&apos;s account.</p>
                 </div>
@@ -1020,7 +1032,7 @@ function ChildItemCard({ email, scans, chats }: { email: string; scans: ChildSca
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ fontSize: "18px" }}>🎓</span>
+          <GraduationCap size={18} style={{ color: "#7b68ee" }} />
           <span style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>{email}</span>
         </div>
         
@@ -1098,8 +1110,9 @@ function ChildItemCard({ email, scans, chats }: { email: string; scans: ChildSca
                     {new Date(chat.created_at).toLocaleDateString()} {new Date(chat.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                   {chat.file_url && (
-                    <a href={chat.file_url} target="_blank" rel="noreferrer" style={{ color: "#7b68ee", fontSize: "10px", textDecoration: "none" }}>
-                      📎 Attachment
+                    <a href={chat.file_url} target="_blank" rel="noreferrer" style={{ color: "#7b68ee", fontSize: "10px", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <Paperclip size={10} />
+                      <span>Attachment</span>
                     </a>
                   )}
                 </div>

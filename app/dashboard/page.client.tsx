@@ -11,7 +11,7 @@ import DevicesSection from "./_components/sections/DevicesSection";
 import ModelSelector from "./_components/ModelSelector";
 import { useMutation } from "@tanstack/react-query";
 import { askChatFormData, type ChatAskModel } from "@/app/(auth)/_lib/api";
-import { Bot, User } from "lucide-react";
+import { Bot, User, Image as ImageIcon, Paperclip, Send } from "lucide-react";
 import { useChatContext } from "./_components/ChatContext";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
@@ -122,7 +122,9 @@ export default function ClientDashboard() {
     const ta = textareaRef.current;
     if (ta) {
       ta.style.height = "auto";
-      ta.style.height = Math.min(ta.scrollHeight, 120) + "px";
+      const targetHeight = ta.scrollHeight;
+      ta.style.height = Math.min(targetHeight, 120) + "px";
+      ta.style.overflowY = targetHeight > 120 ? "auto" : "hidden";
     }
   }, [message]);
 
@@ -254,8 +256,8 @@ export default function ClientDashboard() {
                       {msg.attachments && msg.attachments.length > 0 && (
                         <div style={{ display: "flex", gap: "6px", marginBottom: msg.content ? "8px" : "0", flexWrap: "wrap" }}>
                           {msg.attachments.map((att, i) => (
-                            <span key={i} style={{ background: "rgba(0,0,0,0.2)", padding: "4px 8px", borderRadius: "6px", fontSize: "12px", display: "flex", alignItems: "center", gap: "4px" }}>
-                              {att.type === "image" ? "🖼️" : "📎"} <span style={{ maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{att.name}</span>
+                            <span key={i} style={{ background: "rgba(0,0,0,0.2)", padding: "4px 8px", borderRadius: "6px", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
+                              {att.type === "image" ? <ImageIcon size={12} style={{ color: "rgba(255,255,255,0.7)" }} /> : <Paperclip size={12} style={{ color: "rgba(255,255,255,0.7)" }} />} <span style={{ maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{att.name}</span>
                             </span>
                           ))}
                         </div>
@@ -277,23 +279,27 @@ export default function ClientDashboard() {
             <div style={{ display: "flex", gap: "8px", padding: "0 4px", flexWrap: "wrap" }}>
               {imageFile && (
                 <div style={{ background: "rgba(255,255,255,0.1)", padding: "6px 12px", borderRadius: "12px", fontSize: "13px", color: "#eee", display: "flex", alignItems: "center", gap: "6px" }}>
-                  🖼️ <span style={{ maxWidth: "150px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{imageFile.name}</span>
+                  <ImageIcon size={13} style={{ color: "rgba(255,255,255,0.7)" }} /> <span style={{ maxWidth: "150px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{imageFile.name}</span>
                   <button onClick={() => setImageFile(null)} style={{ background: "none", border: "none", color: "#ff4757", cursor: "pointer", padding: "0 0 0 4px", fontSize: "14px", lineHeight: 1 }}>&times;</button>
                 </div>
               )}
               {docFile && (
                 <div style={{ background: "rgba(255,255,255,0.1)", padding: "6px 12px", borderRadius: "12px", fontSize: "13px", color: "#eee", display: "flex", alignItems: "center", gap: "6px" }}>
-                  📎 <span style={{ maxWidth: "150px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{docFile.name}</span>
+                  <Paperclip size={13} style={{ color: "rgba(255,255,255,0.7)" }} /> <span style={{ maxWidth: "150px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{docFile.name}</span>
                   <button onClick={() => setDocFile(null)} style={{ background: "none", border: "none", color: "#ff4757", cursor: "pointer", padding: "0 0 0 4px", fontSize: "14px", lineHeight: 1 }}>&times;</button>
                 </div>
               )}
             </div>
           )}
           <div style={{ width: "100%", backgroundColor: "#16161f", border: "1px solid rgba(255,255,255,0.09)", borderRadius: "16px", padding: "12px", display: "flex", gap: "12px", alignItems: "flex-end" }}>
-            <button onClick={() => imageInputRef.current?.click()} style={{ background: imageFile ? "rgba(79, 70, 229, 0.3)" : "rgba(255,255,255,0.06)", border: "none", borderRadius: "10px", padding: "8px", cursor: "pointer" }}>🖼️</button>
+            <button onClick={() => imageInputRef.current?.click()} style={{ background: imageFile ? "rgba(79, 70, 229, 0.3)" : "rgba(255,255,255,0.06)", border: "none", borderRadius: "10px", padding: "8px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <ImageIcon size={16} style={{ color: "rgba(255,255,255,0.7)" }} />
+            </button>
             <input ref={imageInputRef} type="file" accept="image/*" hidden onChange={(e) => setImageFile(e.target.files?.[0] || null)} onClick={(e) => { (e.target as HTMLInputElement).value = '' }} />
 
-            <button onClick={() => fileInputRef.current?.click()} style={{ background: docFile ? "rgba(79, 70, 229, 0.3)" : "rgba(255,255,255,0.06)", border: "none", borderRadius: "10px", padding: "8px", cursor: "pointer" }}>📎</button>
+            <button onClick={() => fileInputRef.current?.click()} style={{ background: docFile ? "rgba(79, 70, 229, 0.3)" : "rgba(255,255,255,0.06)", border: "none", borderRadius: "10px", padding: "8px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Paperclip size={16} style={{ color: "rgba(255,255,255,0.7)" }} />
+            </button>
             <input
               ref={fileInputRef}
               type="file"
@@ -309,7 +315,12 @@ export default function ClientDashboard() {
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask a question..."
-            style={{ flex: 1, background: "none", border: "none", color: "#fff", resize: "none", outline: "none", padding: "8px 0" }}
+            style={{ 
+              flex: 1, background: "none", border: "none", color: "#fff", 
+              resize: "none", outline: "none", padding: "8px 0",
+              scrollbarColor: "rgba(255, 255, 255, 0.15) transparent",
+              scrollbarWidth: "thin"
+            }}
             rows={1}
           />
 
@@ -321,7 +332,27 @@ export default function ClientDashboard() {
             }} 
             direction="down" 
           />
-          <button onClick={handleSend} disabled={askMutation.isPending} style={{ background: "linear-gradient(135deg, #6c5ce7, #7b68ee)", border: "none", borderRadius: "10px", padding: "8px 16px", color: "#fff", cursor: "pointer" }}>Send</button>
+          {(message.trim() || imageFile || docFile) && (
+            <button 
+              onClick={handleSend} 
+              disabled={askMutation.isPending} 
+              style={{ 
+                background: "linear-gradient(135deg, #6c5ce7, #7b68ee)", 
+                border: "none", 
+                borderRadius: "10px", 
+                padding: "8px", 
+                color: "#fff", 
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minWidth: "36px",
+                height: "36px"
+              }}
+            >
+              <Send size={16} />
+            </button>
+          )}
           </div>
         </div>
       </section>
