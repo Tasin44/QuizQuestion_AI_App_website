@@ -95,7 +95,7 @@ const markdownComponents = {
 export default function ClientDashboard() {
   const { setHasChat } = useChatContext();
   const [message, setMessage] = useState("");
-  const [model, setModel] = useState("gpt-4o");
+  const [model, setModel] = useState("auto");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [docFile, setDocFile] = useState<File | null>(null);

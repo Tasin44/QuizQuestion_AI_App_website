@@ -11,7 +11,10 @@ import {
   type ChildScanItem, 
   type ChildChatItem,
   deleteAllChatHistory,
-  getChatHistory
+  getChatHistory,
+  send2faCode,
+  verify2faCode,
+  get2faStatus
 } from "@/app/(auth)/_lib/api";
 import { getAccessToken } from "@/app/(auth)/_lib/authStorage";
 import ModelSelector from "../_components/ModelSelector";
@@ -34,7 +37,14 @@ import {
   Users,
   Paperclip,
   Eye,
-  EyeOff
+  EyeOff,
+  ArrowLeft,
+  ArrowRight,
+  Lock,
+  Mail,
+  ShieldCheck,
+  Shield,
+  Info
 } from "lucide-react";
 
 const aiModels = [
@@ -119,8 +129,8 @@ function Toggle({ active, onClick }: ToggleProps) {
 }
 
 export default function SettingsPage() {
-  const [selectedModel, setSelectedModel] = useState("gpt-4o");
-  const [askModel, setAskModel] = useState("gpt-4o");
+  const [selectedModel, setSelectedModel] = useState("auto");
+  const [askModel, setAskModel] = useState("auto");
   const [responseStyle, setResponseStyle] = useState("balanced");
   const [difficulty, setDifficulty] = useState(50);
   const [selectedSubjects, setSelectedSubjects] = useState(["mathematics", "physics"]);
@@ -189,6 +199,16 @@ export default function SettingsPage() {
 
   const [isExporting, setIsExporting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState<boolean | null>(null);
+  const [twoFactorVerifiedAt, setTwoFactorVerifiedAt] = useState<string | null>(null);
+  const [twoFactorStep, setTwoFactorStep] = useState<"status" | "method" | "confirm_email" | "verify_code">("status");
+  const [otpCode, setOtpCode] = useState("");
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
+  const [isFetchingStatus, setIsFetchingStatus] = useState(false);
+  const [emailFor2fa, setEmailFor2fa] = useState("");
+
 
   const handleExportData = async () => {
     setIsExporting(true);
@@ -269,8 +289,8 @@ export default function SettingsPage() {
       localStorage.removeItem("difficulty_level");
       localStorage.removeItem("selected_subjects");
       
-      setSelectedModel("gpt-4o");
-      setAskModel("gpt-4o");
+      setSelectedModel("auto");
+      setAskModel("auto");
       setResponseStyle("balanced");
       setDifficulty(50);
       setSelectedSubjects(["mathematics", "physics"]);
@@ -300,6 +320,29 @@ export default function SettingsPage() {
       return () => clearTimeout(timer);
     }
   }, [profileData]);
+
+  // Sync profile data or fetch status from /2fa/status/
+  useEffect(() => {
+    if (profileData?.email) {
+      setEmailFor2fa(profileData.email);
+      
+      setIsFetchingStatus(true);
+      get2faStatus(profileData.email)
+        .then((res) => {
+          setTwoFactorEnabled(res.data?.two_factor_enabled);
+          if (res.data?.verified_at) {
+            setTwoFactorVerifiedAt(res.data?.verified_at);
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to fetch 2FA status:", err);
+          setTwoFactorEnabled(!!profileData.two_factor_enabled);
+        })
+        .finally(() => {
+          setIsFetchingStatus(false);
+        });
+    }
+  }, [profileData?.email, profileData?.two_factor_enabled]);
 
   const isParent = !!profileData?.is_parent;
 
@@ -937,6 +980,452 @@ export default function SettingsPage() {
                   <span>Clear Cache</span>
                 </button>
               </div>
+            </div>
+
+            {/* Two-Factor Authentication */}
+            <div style={cardStyle}>
+              {/* Header */}
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+                {twoFactorStep !== "status" && (
+                  <button 
+                    onClick={() => {
+                      if (twoFactorStep === "method") setTwoFactorStep("status");
+                      else if (twoFactorStep === "confirm_email") setTwoFactorStep("method");
+                      else if (twoFactorStep === "verify_code") setTwoFactorStep("confirm_email");
+                    }}
+                    style={{
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: "50%",
+                      width: "32px",
+                      height: "32px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "rgba(255,255,255,0.6)",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "#ffffff";
+                      e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = "rgba(255, 255, 255, 0.6)";
+                      e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.04)";
+                    }}
+                  >
+                    <ArrowLeft size={16} />
+                  </button>
+                )}
+                <div>
+                  <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: 0 }}>
+                    {twoFactorStep === "method" ? "Choose Your Method" : "Two-Factor Auth"}
+                  </h2>
+                  <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "11px", margin: "2px 0 0" }}>
+                    {twoFactorStep === "method" ? "Select a verification method" : "Add an extra layer of security"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Content */}
+              {isFetchingStatus ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 0" }}>
+                  <div style={{
+                    width: "28px", height: "28px",
+                    border: "3px solid rgba(255,255,255,0.08)", borderTopColor: "#6c5ce7",
+                    borderRadius: "50%", animation: "spin 1s linear infinite"
+                  }} />
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "11px", marginTop: "10px" }}>Checking status...</p>
+                </div>
+              ) : (
+                <>
+                  {/* Step 1: STATUS */}
+                  {twoFactorStep === "status" && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                      {/* Status block */}
+                      <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "14px",
+                        padding: "16px",
+                        backgroundColor: "rgba(255,255,255,0.02)",
+                        border: "1px solid rgba(255,255,255,0.04)",
+                        borderRadius: "12px",
+                      }}>
+                        <div style={{
+                          width: "40px",
+                          height: "40px",
+                          borderRadius: "50%",
+                          backgroundColor: twoFactorEnabled ? "rgba(34, 197, 94, 0.1)" : "rgba(255, 255, 255, 0.04)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: twoFactorEnabled ? "#22c55e" : "rgba(255,255,255,0.4)"
+                        }}>
+                          {twoFactorEnabled ? <ShieldCheck size={20} /> : <Lock size={20} />}
+                        </div>
+                        <div>
+                          <p style={{ color: "#fff", fontSize: "14px", fontWeight: 600, margin: 0 }}>
+                            {twoFactorEnabled ? "2FA Enabled" : "2FA Disabled"}
+                          </p>
+                          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "11px", margin: "2px 0 0" }}>
+                            {twoFactorEnabled ? "Your account has advanced protection active" : "Your account has basic protection only"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Info banner */}
+                      <div style={{
+                        display: "flex",
+                        gap: "12px",
+                        padding: "14px",
+                        backgroundColor: "rgba(108, 92, 231, 0.04)",
+                        border: "1px solid rgba(108, 92, 231, 0.08)",
+                        borderRadius: "12px",
+                      }}>
+                        <div style={{ color: "#7b68ee", flexShrink: 0, marginTop: "2px" }}>
+                          <Info size={16} />
+                        </div>
+                        <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "12px", margin: 0, lineHeight: 1.5 }}>
+                          {twoFactorEnabled 
+                            ? "Two-factor authentication is active. Codes will be sent to your email to verify your identity on future logins."
+                            : "Two-factor authentication adds a second verification step when you sign in, protecting your account even if your password is compromised."}
+                        </p>
+                      </div>
+
+                      {/* Action button */}
+                      <button
+                        onClick={() => {
+                          if (twoFactorEnabled) {
+                            setTwoFactorEnabled(false);
+                            toast.success("Two-factor authentication has been disabled.");
+                          } else {
+                            setTwoFactorStep("method");
+                          }
+                        }}
+                        style={{
+                          padding: "11px 20px",
+                          background: twoFactorEnabled ? "rgba(239, 68, 68, 0.08)" : "linear-gradient(135deg, #6c5ce7, #7b68ee)",
+                          border: twoFactorEnabled ? "1px solid rgba(239, 68, 68, 0.2)" : "none",
+                          borderRadius: "10px",
+                          color: twoFactorEnabled ? "#ef4444" : "#fff",
+                          fontSize: "13px",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "8px",
+                          transition: "all 0.2s ease"
+                        }}
+                        onMouseEnter={(e) => {
+                          if (twoFactorEnabled) {
+                            e.currentTarget.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
+                            e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.4)";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (twoFactorEnabled) {
+                            e.currentTarget.style.backgroundColor = "rgba(239, 68, 68, 0.08)";
+                            e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.2)";
+                          }
+                        }}
+                      >
+                        {twoFactorEnabled ? (
+                          <>
+                            <Lock size={14} />
+                            <span>Disable 2FA</span>
+                          </>
+                        ) : (
+                          <>
+                            <Shield size={14} />
+                            <span>Enable 2FA</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Step 2: CHOOSE METHOD */}
+                  {twoFactorStep === "method" && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                      {/* Method option: Email */}
+                      <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "16px",
+                        backgroundColor: "rgba(255,255,255,0.02)",
+                        border: "1px solid rgba(108, 92, 231, 0.2)",
+                        borderRadius: "12px",
+                        cursor: "pointer",
+                      }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                          <div style={{
+                            width: "40px",
+                            height: "40px",
+                            borderRadius: "50%",
+                            backgroundColor: "rgba(108, 92, 231, 0.1)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#7b68ee"
+                          }}>
+                            <Mail size={18} />
+                          </div>
+                          <div>
+                            <p style={{ color: "#fff", fontSize: "14px", fontWeight: 600, margin: 0 }}>Email</p>
+                            <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "11px", margin: "2px 0 0" }}>
+                              Receive a code at your registered email address.
+                            </p>
+                          </div>
+                        </div>
+                        {/* Custom styled Radio button */}
+                        <div style={{
+                          width: "18px",
+                          height: "18px",
+                          borderRadius: "50%",
+                          border: "2px solid #7b68ee",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}>
+                          <div style={{
+                            width: "10px",
+                            height: "10px",
+                            borderRadius: "50%",
+                            backgroundColor: "#7b68ee"
+                          }} />
+                        </div>
+                      </div>
+
+                      {/* Continue button */}
+                      <button
+                        onClick={() => setTwoFactorStep("confirm_email")}
+                        style={{
+                          padding: "11px 20px",
+                          background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
+                          border: "none",
+                          borderRadius: "10px",
+                          color: "#fff",
+                          fontSize: "13px",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "8px"
+                        }}
+                      >
+                        <span>Continue</span>
+                        <ArrowRight size={14} />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Step 3: CONFIRM EMAIL */}
+                  {twoFactorStep === "confirm_email" && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                      <div>
+                        <h3 style={{ color: "#fff", fontSize: "14px", fontWeight: 600, margin: "0 0 4px" }}>Confirm Your Email</h3>
+                        <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "11px", margin: 0 }}>
+                          Codes will be sent to your registered email
+                        </p>
+                      </div>
+
+                      <div style={{ position: "relative" }}>
+                        <div style={{
+                          position: "absolute",
+                          left: "12px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          color: "rgba(255,255,255,0.35)",
+                          display: "flex",
+                          alignItems: "center"
+                        }}>
+                          <Mail size={16} />
+                        </div>
+                        <input
+                          type="email"
+                          readOnly
+                          value={emailFor2fa}
+                          style={{
+                            width: "100%",
+                            padding: "11px 12px 11px 40px",
+                            backgroundColor: "rgba(255,255,255,0.02)",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                            borderRadius: "10px",
+                            color: "rgba(255,255,255,0.5)",
+                            fontSize: "13px",
+                            outline: "none",
+                            boxSizing: "border-box"
+                          }}
+                        />
+                      </div>
+
+                      {/* Send Code button */}
+                      <button
+                        onClick={() => {
+                          setIsSendingCode(true);
+                          send2faCode(emailFor2fa)
+                            .then(() => {
+                              toast.success("A verification code has been sent to your email. Please check your inbox.");
+                              setTwoFactorStep("verify_code");
+                            })
+                            .catch((err) => {
+                              toast.error(err.message || "Failed to send verification code. Please try again.");
+                            })
+                            .finally(() => {
+                              setIsSendingCode(false);
+                            });
+                        }}
+                        disabled={isSendingCode}
+                        style={{
+                          padding: "11px 20px",
+                          background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
+                          border: "none",
+                          borderRadius: "10px",
+                          color: "#fff",
+                          fontSize: "13px",
+                          fontWeight: 600,
+                          cursor: isSendingCode ? "not-allowed" : "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "8px",
+                          opacity: isSendingCode ? 0.7 : 1
+                        }}
+                      >
+                        <span>{isSendingCode ? "Sending Code..." : "Send Code"}</span>
+                        {!isSendingCode && <ArrowRight size={14} />}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Step 4: ENTER VERIFICATION CODE */}
+                  {twoFactorStep === "verify_code" && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", textAlign: "center" }}>
+                        <div style={{
+                          width: "48px",
+                          height: "48px",
+                          borderRadius: "50%",
+                          backgroundColor: "rgba(108, 92, 231, 0.1)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#7b68ee"
+                        }}>
+                          <Mail size={22} />
+                        </div>
+                        <div>
+                          <h3 style={{ color: "#fff", fontSize: "14px", fontWeight: 600, margin: "0 0 2px" }}>Enter Verification Code</h3>
+                          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "11px", margin: 0 }}>
+                            Code sent to {emailFor2fa}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="ENTER CODE"
+                          value={otpCode}
+                          onChange={(e) => setOtpCode(e.target.value)}
+                          style={{
+                            width: "100%",
+                            padding: "11px 12px",
+                            backgroundColor: "rgba(255,255,255,0.02)",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                            borderRadius: "10px",
+                            color: "#fff",
+                            fontSize: "13px",
+                            textAlign: "center",
+                            letterSpacing: "4px",
+                            fontWeight: 700,
+                            outline: "none",
+                            boxSizing: "border-box"
+                          }}
+                        />
+                      </div>
+
+                      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                        {/* Verify Code button */}
+                        <button
+                          onClick={() => {
+                            if (!otpCode.trim()) {
+                              toast.error("Please enter the verification code.");
+                              return;
+                            }
+                            setIsVerifyingCode(true);
+                            verify2faCode(emailFor2fa, otpCode)
+                              .then((res) => {
+                                toast.success(res.message || "Two-factor authentication has been successfully enabled.");
+                                setTwoFactorEnabled(true);
+                                setTwoFactorStep("status");
+                                setOtpCode("");
+                              })
+                              .catch((err) => {
+                                toast.error(err.message || "Verification failed. Please check the code and try again.");
+                              })
+                              .finally(() => {
+                                setIsVerifyingCode(false);
+                              });
+                          }}
+                          disabled={isVerifyingCode}
+                          style={{
+                            padding: "11px 20px",
+                            background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
+                            border: "none",
+                            borderRadius: "10px",
+                            color: "#fff",
+                            fontSize: "13px",
+                            fontWeight: 600,
+                            cursor: isVerifyingCode ? "not-allowed" : "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            opacity: isVerifyingCode ? 0.7 : 1
+                          }}
+                        >
+                          <span>{isVerifyingCode ? "Verifying..." : "Verify Code"}</span>
+                        </button>
+
+                        {/* Resend Link */}
+                        <button
+                          onClick={() => {
+                            setIsSendingCode(true);
+                            send2faCode(emailFor2fa)
+                              .then(() => {
+                                toast.success("A new verification code has been sent to your email.");
+                              })
+                              .catch((err) => {
+                                toast.error(err.message || "Failed to resend code.");
+                              })
+                              .finally(() => {
+                                setIsSendingCode(false);
+                              });
+                          }}
+                          disabled={isSendingCode}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "#7b68ee",
+                            fontSize: "12px",
+                            fontWeight: 500,
+                            cursor: isSendingCode ? "not-allowed" : "pointer",
+                            textDecoration: "none",
+                            textAlign: "center"
+                          }}
+                        >
+                          {isSendingCode ? "Resending..." : "Resend code"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
           </div>

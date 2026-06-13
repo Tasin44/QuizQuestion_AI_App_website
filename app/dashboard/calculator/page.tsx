@@ -79,7 +79,7 @@ function renderMessageContent(content: string) {
 export default function CalculatorPage() {
   const [expression, setExpression] = useState("");
   const [history, setHistory] = useState<Array<{ expr: string; result: string }>>([]);
-  const [model, setModel] = useState("gpt-4o");
+  const [model, setModel] = useState("auto");
   const [response, setResponse] = useState("");
   const [copied, setCopied] = useState(false);
 

@@ -26,6 +26,13 @@ export default function TopNavbar({ onLogout, onMenuToggle, isSidebarCollapsed }
   const name = profileQuery.data?.data?.name || "";
   const email = profileQuery.data?.data?.email || "";
   const imageUrl = profileQuery.data?.data?.image_url || "";
+
+  const emailPrefix = email ? email.split("@")[0] : "";
+  const fallbackName = emailPrefix 
+    ? emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1) 
+    : "User";
+  const displayName = name && name.trim() ? name : fallbackName;
+
   const initialsSource = name || email || "U";
   const initials = initialsSource.trim().slice(0, 2).toUpperCase();
 
@@ -153,7 +160,7 @@ export default function TopNavbar({ onLogout, onMenuToggle, isSidebarCollapsed }
             </div>
             <div>
               <p className="topnav-user-name" style={{ color: "#fff", fontSize: "13px", fontWeight: 600, margin: 0, lineHeight: 1.3 }}>
-                {name || "User"}
+                {displayName}
               </p>
               <p className="topnav-user-email" style={{ color: "rgba(255,255,255,0.4)", fontSize: "11px", margin: 0 }}>
                 {email || ""}

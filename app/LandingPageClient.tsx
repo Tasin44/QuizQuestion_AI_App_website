@@ -12,7 +12,7 @@ interface ChatMessage {
 
 export default function LandingPageClient() {
   const [message, setMessage] = useState("");
-  const [model, setModel] = useState("claude-sonnet-4-6");
+  const [model, setModel] = useState("auto");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isThinking, setIsThinking] = useState(false);

@@ -114,7 +114,7 @@ export default function ChatDetailPage() {
     queryFn: getChatHistory,
   });
 
-  const [model, setModel] = useState("gpt-4o");
+  const [model, setModel] = useState("auto");
 
   // Load preferred model from localStorage on mount safely
   useEffect(() => {

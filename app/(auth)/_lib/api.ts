@@ -452,3 +452,93 @@ export function getAiPersonalization(): Promise<AiPersonalizationResponse> {
   });
 }
 
+/* ───── Two-Factor Authentication ───── */
+
+export type TwoFactorSendResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: {
+    email: string;
+  };
+  timestamp: string;
+};
+
+export type TwoFactorVerifyResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: {
+    two_factor_enabled: boolean;
+    verified_at: string;
+  };
+  timestamp: string;
+};
+
+export type TwoFactorStatusResponse = {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: {
+    two_factor_enabled: boolean;
+    verified_at?: string;
+  };
+  timestamp: string;
+};
+
+export function send2faCode(email: string): Promise<TwoFactorSendResponse> {
+  const token = getStoredAccessToken();
+  return fetch(`${API_BASE_URL}/2fa/send/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ email }),
+  }).then(async (res) => {
+    const data = await res.json().catch(() => null);
+    if (!res.ok || data?.success === false) {
+      throw new ApiError(data?.message || "Failed to send code", data?.data || null);
+    }
+    return data as TwoFactorSendResponse;
+  });
+}
+
+export function verify2faCode(email: string, otpCode: string): Promise<TwoFactorVerifyResponse> {
+  const token = getStoredAccessToken();
+  return fetch(`${API_BASE_URL}/2fa/verify/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ email, otp_code: otpCode }),
+  }).then(async (res) => {
+    const data = await res.json().catch(() => null);
+    if (!res.ok || data?.success === false) {
+      throw new ApiError(data?.message || "Verification failed", data?.data || null);
+    }
+    return data as TwoFactorVerifyResponse;
+  });
+}
+
+export function get2faStatus(email: string, otpCode?: string): Promise<TwoFactorStatusResponse> {
+  const token = getStoredAccessToken();
+  const params = new URLSearchParams();
+  params.append("email", email);
+  if (otpCode) {
+    params.append("otp_code", otpCode);
+  }
+  return fetch(`${API_BASE_URL}/2fa/status/?${params.toString()}`, {
+    method: "GET",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  }).then(async (res) => {
+    const data = await res.json().catch(() => null);
+    if (!res.ok || data?.success === false) {
+      throw new ApiError(data?.message || "Failed to fetch 2FA status", data?.data || null);
+    }
+    return data as TwoFactorStatusResponse;
+  });
+}
+
+
