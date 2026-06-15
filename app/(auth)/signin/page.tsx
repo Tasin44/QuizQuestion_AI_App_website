@@ -20,7 +20,7 @@ export default function SignInPage() {
     // Browser-based allauth login (redirect) -> backend mints JWT -> frontend stores tokens.
     // Redirect straight to /dashboard after Google login.
     // Tokens are appended in the URL fragment by the backend and then captured by the dashboard layout.
-    const frontendCallbackUrl = `${window.location.origin}/dashboard`;
+    const frontendCallbackUrl = `${window.location.origin}/oauth-callback`;
     const backendCompleteUrl = `${apiBase}/auth/social/complete/?next=${encodeURIComponent(frontendCallbackUrl)}`;
 
     setGoogleLoginUrl(`${apiBase}/accounts/google/login/?next=${encodeURIComponent(backendCompleteUrl)}`);

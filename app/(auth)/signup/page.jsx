@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AuthCard from "../_components/AuthCard";
@@ -12,6 +12,14 @@ export default function SignUpPage() {
   const router = useRouter();
   const [form, setForm] = useState({ email: "", password: "", confirmPassword: "" });
   const [error, setError] = useState("");
+  const [googleLoginUrl, setGoogleLoginUrl] = useState("https://api.quizquestion.ai/accounts/google/login/");
+
+  useEffect(() => {
+    const apiBase = process.env.NEXT_PUBLIC_BASE_URL || "https://api.quizquestion.ai";
+    const frontendCallbackUrl = `${window.location.origin}/oauth-callback`;
+    const backendCompleteUrl = `${apiBase}/auth/social/complete/?next=${encodeURIComponent(frontendCallbackUrl)}`;
+    setGoogleLoginUrl(`${apiBase}/accounts/google/login/?next=${encodeURIComponent(backendCompleteUrl)}`);
+  }, []);
 
   const signupMutation = useMutation({
     mutationFn: ({ email, password }) => signup(email, password),
@@ -78,6 +86,45 @@ export default function SignUpPage() {
       <AuthButton onClick={handleSubmit} disabled={signupMutation.isPending}>
         {signupMutation.isPending ? "Creating..." : "Create Account"}
       </AuthButton>
+
+      <a
+        href={googleLoginUrl}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "10px",
+          width: "100%",
+          borderRadius: "12px",
+          border: "1px solid rgba(255,255,255,0.08)",
+          backgroundColor: "#15151d",
+          color: "#ffffff",
+          fontSize: "15px",
+          fontWeight: 600,
+          padding: "14px 16px",
+          textDecoration: "none",
+          transition: "all 0.2s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#1b1b26";
+          e.currentTarget.style.borderColor = "rgba(255,255,255,0.16)";
+          e.currentTarget.style.transform = "translateY(-1px)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#15151d";
+          e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+      >
+        <img
+          src="/images/google.svg"
+          alt="Google"
+          width={18}
+          height={18}
+          style={{ display: "block" }}
+        />
+        Continue with Google
+      </a>
 
       <div className="text-center" style={{ marginTop: "-10px" }}>
         <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "13px", margin: "0 0 8px" }}>or</p>
