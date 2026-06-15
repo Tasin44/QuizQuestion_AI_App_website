@@ -168,8 +168,8 @@ export default function CalculatorPage() {
         .calc-page { display: flex; flex-direction: column; align-items: center; padding: 28px; width: 100%; max-width: 900px; margin: 0 auto; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 640px) {
-          .calc-page { padding: 14px; }
-          .calc-btn { padding: 18px 6px !important; font-size: 16px !important; }
+          .calc-page { padding: 12px; }
+          .calc-btn { padding: 12px 4px !important; font-size: 14px !important; }
         }
       `}</style>
 
@@ -181,20 +181,27 @@ export default function CalculatorPage() {
 
       {/* Calculator Card */}
       <div style={{ width: "100%", backgroundColor: "#111118", borderRadius: "14px", border: "1px solid rgba(255,255,255,0.06)", overflow: "visible", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>
-        <div style={{ padding: "28px" }}>
+        <div className="p-4 sm:p-7">
           <h2 style={{ color: "#fff", fontSize: "20px", fontWeight: 600, margin: "0 0 24px", display: "flex", alignItems: "center", gap: "10px" }}><Calculator size={20} style={{ color: "#7b68ee" }} /> Math Calculator</h2>
 
           {/* Expression Display */}
-          <div style={{ display: "flex", alignItems: "center", backgroundColor: "#0f0f17", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "12px", padding: "18px 22px", marginBottom: "8px" }}>
+          <div className="flex items-center bg-[#0f0f17] border border-[rgba(255,255,255,0.07)] rounded-xl p-3 px-4 sm:p-5 sm:px-6 mb-2">
             <input
               type="text"
               value={expression}
               onChange={(e) => setExpression(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSolve(); } }}
-              placeholder="Enter equation or expression..."
-              style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#fff", fontSize: "24px", fontWeight: 500, fontFamily: "monospace", letterSpacing: "1px", marginRight: "14px" }}
+              placeholder="Enter equation..."
+              className="text-base sm:text-2xl w-full min-w-0"
+              style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#fff", fontWeight: 500, fontFamily: "monospace", letterSpacing: "1px", marginRight: "10px" }}
             />
-            <button onClick={handleSolve} style={{ background: "linear-gradient(135deg, #6c5ce7, #7b68ee)", border: "none", borderRadius: "12px", color: "#fff", fontSize: "22px", fontWeight: 700, padding: "10px 24px", cursor: "pointer", flexShrink: 0, transition: "all 0.2s" }}>=</button>
+            <button 
+              onClick={handleSolve} 
+              className="text-base px-4 py-2 sm:text-xl sm:px-6 sm:py-2.5 font-bold"
+              style={{ background: "linear-gradient(135deg, #6c5ce7, #7b68ee)", border: "none", borderRadius: "10px", color: "#fff", cursor: "pointer", flexShrink: 0, transition: "all 0.2s" }}
+            >
+              =
+            </button>
           </div>
 
           {/* Live Preview */}
@@ -209,9 +216,9 @@ export default function CalculatorPage() {
           {(!livePreview || expression === livePreview) && <div style={{ height: "12px" }} />}
 
           {/* Keypad */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div className="flex flex-col gap-1.5 sm:gap-2.5">
             {buttons.map((row, ri) => (
-              <div key={ri} style={{ display: "flex", gap: "10px" }}>
+              <div key={ri} className="flex gap-1.5 sm:gap-2.5">
                 {row.map((key) => {
                   const isPurple = purpleKeys.includes(key);
                   const isFirstRowX = key === "x" && ri === 0;
@@ -242,6 +249,7 @@ export default function CalculatorPage() {
                         cursor: "pointer",
                         transition: "all 0.12s ease",
                         fontFamily: "monospace",
+                        minWidth: 0,
                       }}
                       onMouseEnter={(e) => { if (!isEquals) e.currentTarget.style.backgroundColor = hoverBg; }}
                       onMouseLeave={(e) => { if (!isEquals) e.currentTarget.style.backgroundColor = bg; }}
@@ -255,10 +263,11 @@ export default function CalculatorPage() {
           </div>
 
           {/* AI Explain + Model Selector */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "20px", gap: "12px" }}>
+          <div className="flex justify-between items-center mt-5 gap-2 sm:gap-3">
             <button
               onClick={handleAskAI}
               disabled={askMutation.isPending || !expression.trim()}
+              className="px-3 sm:px-5"
               style={{
                 flex: 1,
                 display: "inline-flex",
@@ -266,7 +275,6 @@ export default function CalculatorPage() {
                 justifyContent: "center",
                 gap: "8px",
                 height: "46px",
-                padding: "0 20px",
                 borderRadius: "10px",
                 border: "1px solid rgba(123,104,238,0.3)",
                 backgroundColor: "rgba(123,104,238,0.08)",

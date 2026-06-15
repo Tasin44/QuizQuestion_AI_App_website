@@ -142,13 +142,12 @@ export default function ModelSelector({ size = "sm", value, onChange, direction 
       {/* Pill Trigger */}
       <button
         onClick={() => setOpen(!open)}
+        className="px-2.5 gap-1.5 sm:px-3.5 sm:gap-2"
         style={{
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: "8px",
           height: height || (size === "sm" ? "32px" : "40px"),
-          padding: "0 14px",
           backgroundColor: "rgba(255,255,255,0.06)",
           border: "1px solid rgba(255,255,255,0.1)",
           borderRadius: borderRadius || "20px",
@@ -166,7 +165,10 @@ export default function ModelSelector({ size = "sm", value, onChange, direction 
         }}
       >
         <selected.Logo size={16} />
-        <span style={{ color: "#ffffff", fontSize: size === "sm" ? "12px" : "13px", fontWeight: 600 }}>
+        <span 
+          className="hidden sm:inline"
+          style={{ color: "#ffffff", fontSize: size === "sm" ? "12px" : "13px", fontWeight: 600 }}
+        >
           {selected.name}
         </span>
         <span

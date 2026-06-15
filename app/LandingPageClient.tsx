@@ -25,8 +25,8 @@ export default function LandingPageClient() {
     if (ta) {
       ta.style.height = "auto";
       const targetHeight = ta.scrollHeight;
-      ta.style.height = Math.min(targetHeight, 140) + "px";
-      ta.style.overflowY = targetHeight > 140 ? "auto" : "hidden";
+      ta.style.height = Math.min(targetHeight, 240) + "px";
+      ta.style.overflowY = targetHeight > 240 ? "auto" : "hidden";
     }
   }, [message]);
 
@@ -187,20 +187,11 @@ export default function LandingPageClient() {
 
         {/* Input box */}
         <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "8px" }}>
-          <div style={{
-            width: "100%",
-            backgroundColor: "#16161f",
-            border: "1px solid rgba(255,255,255,0.09)",
-            borderRadius: "16px",
-            padding: "12px",
-            display: "flex",
-            gap: "12px",
-            alignItems: "flex-end",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.5)"
-          }}>
+          <div className="w-full bg-[#16161f] border border-[rgba(255,255,255,0.09)] rounded-2xl p-3 flex flex-wrap gap-2 items-center shadow-[0_8px_32px_rgba(0,0,0,0.5)] box-border sm:flex-nowrap sm:gap-3 sm:items-end">
             {/* Image attachment */}
             <button 
               onClick={triggerAuthModal}
+              className="order-1 flex items-center justify-center shrink-0 sm:order-none"
               style={{
                 background: "rgba(255,255,255,0.06)", border: "none", borderRadius: "10px",
                 padding: "8px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
@@ -215,6 +206,7 @@ export default function LandingPageClient() {
             {/* File attachment */}
             <button 
               onClick={triggerAuthModal}
+              className="order-1 flex items-center justify-center shrink-0 sm:order-none"
               style={{
                 background: "rgba(255,255,255,0.06)", border: "none", borderRadius: "10px",
                 padding: "8px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
@@ -233,30 +225,28 @@ export default function LandingPageClient() {
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask a question..."
-              style={{
-                flex: 1, background: "none", border: "none", color: "#ffffff",
-                resize: "none", outline: "none", padding: "8px 0", fontSize: "14px",
-                lineHeight: "1.5", caretColor: "#7b68ee",
-                scrollbarColor: "rgba(255, 255, 255, 0.15) transparent",
-                scrollbarWidth: "thin"
-              }}
+              className="w-full flex-none order-first bg-transparent border-none focus:ring-0 focus:outline-none text-white resize-none outline-none py-2 text-sm leading-relaxed caret-[#7b68ee] box-border sm:w-auto sm:flex-1 sm:order-none sm:py-2"
               rows={1}
+              style={{ transition: "height 0.1s ease-out" }}
             />
 
             {/* Model Selector */}
-            <ModelSelector 
-              value={model} 
-              onChange={(val) => {
-                setModel(val);
-                localStorage.setItem("preferred_model", val);
-              }}
-              direction="up"
-            />
+            <div className="order-2 ml-auto shrink-0 flex items-center sm:order-none sm:ml-0">
+              <ModelSelector 
+                value={model} 
+                onChange={(val) => {
+                  setModel(val);
+                  localStorage.setItem("preferred_model", val);
+                }}
+                direction="up"
+              />
+            </div>
 
             {/* Send Button */}
             {message.trim() && (
               <button
                 onClick={handleSend}
+                className="order-3 shrink-0 sm:order-none"
                 style={{
                   background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
                   border: "none", borderRadius: "10px", padding: "8px", color: "#ffffff",

@@ -123,8 +123,8 @@ export default function ClientDashboard() {
     if (ta) {
       ta.style.height = "auto";
       const targetHeight = ta.scrollHeight;
-      ta.style.height = Math.min(targetHeight, 120) + "px";
-      ta.style.overflowY = targetHeight > 120 ? "auto" : "hidden";
+      ta.style.height = Math.min(targetHeight, 240) + "px";
+      ta.style.overflowY = targetHeight > 240 ? "auto" : "hidden";
     }
   }, [message]);
 
@@ -216,18 +216,25 @@ export default function ClientDashboard() {
         }
         .chat-msg { animation: fadeSlideUp 0.3s ease forwards; }
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none !important;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none !important;
+          scrollbar-width: none !important;
+        }
       `}</style>
 
-      <section style={{
-        padding: hasChat ? "30px 40px 20px" : "100px 40px 60px",
-        maxWidth: "1200px",
-        margin: "0 auto",
-        textAlign: "center",
-        transition: "all 0.4s ease",
-        display: "flex", 
-        flexDirection: "column", 
-        alignItems: "center"
-      }}>
+      <section 
+        className={`${
+          hasChat 
+            ? "pt-[30px] pb-[20px] px-4 sm:px-10" 
+            : "pt-[100px] pb-[60px] px-4 sm:px-10"
+        } w-full max-w-[1200px] mx-auto text-center flex flex-col items-center`}
+        style={{
+          transition: "all 0.4s ease",
+        }}
+      >
         {!hasChat && (
           <>
             <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "15px", margin: "0 0 6px" }}>{getGreeting()} 👋</p>
@@ -238,7 +245,7 @@ export default function ClientDashboard() {
         )}
 
         {hasChat && (
-          <div style={{
+          <div className="no-scrollbar" style={{
             width: "100%", maxWidth: "960px", maxHeight: "calc(100vh - 220px)",
             overflowY: "auto", marginBottom: "20px", display: "flex", flexDirection: "column", gap: "20px", padding: "20px 8px"
           }}>
@@ -291,13 +298,21 @@ export default function ClientDashboard() {
               )}
             </div>
           )}
-          <div style={{ width: "100%", backgroundColor: "#16161f", border: "1px solid rgba(255,255,255,0.09)", borderRadius: "16px", padding: "12px", display: "flex", gap: "12px", alignItems: "flex-end" }}>
-            <button onClick={() => imageInputRef.current?.click()} style={{ background: imageFile ? "rgba(79, 70, 229, 0.3)" : "rgba(255,255,255,0.06)", border: "none", borderRadius: "10px", padding: "8px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="w-full bg-[#16161f] border border-[rgba(255,255,255,0.09)] rounded-2xl p-3 flex flex-wrap gap-2 items-center shadow-[0_8px_32px_rgba(0,0,0,0.5)] box-border sm:flex-nowrap sm:gap-3 sm:items-end">
+            <button 
+              onClick={() => imageInputRef.current?.click()} 
+              className="order-1 flex items-center justify-center shrink-0 sm:order-none"
+              style={{ background: imageFile ? "rgba(79, 70, 229, 0.3)" : "rgba(255,255,255,0.06)", border: "none", borderRadius: "10px", padding: "8px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
               <ImageIcon size={16} style={{ color: "rgba(255,255,255,0.7)" }} />
             </button>
             <input ref={imageInputRef} type="file" accept="image/*" hidden onChange={(e) => setImageFile(e.target.files?.[0] || null)} onClick={(e) => { (e.target as HTMLInputElement).value = '' }} />
 
-            <button onClick={() => fileInputRef.current?.click()} style={{ background: docFile ? "rgba(79, 70, 229, 0.3)" : "rgba(255,255,255,0.06)", border: "none", borderRadius: "10px", padding: "8px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <button 
+              onClick={() => fileInputRef.current?.click()} 
+              className="order-1 flex items-center justify-center shrink-0 sm:order-none"
+              style={{ background: docFile ? "rgba(79, 70, 229, 0.3)" : "rgba(255,255,255,0.06)", border: "none", borderRadius: "10px", padding: "8px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+            >
               <Paperclip size={16} style={{ color: "rgba(255,255,255,0.7)" }} />
             </button>
             <input
@@ -310,49 +325,48 @@ export default function ClientDashboard() {
             />
             
             <textarea
-            ref={textareaRef}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask a question..."
-            style={{ 
-              flex: 1, background: "none", border: "none", color: "#fff", 
-              resize: "none", outline: "none", padding: "8px 0",
-              scrollbarColor: "rgba(255, 255, 255, 0.15) transparent",
-              scrollbarWidth: "thin"
-            }}
-            rows={1}
-          />
+              ref={textareaRef}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask a question..."
+              className="w-full flex-none order-first bg-transparent border-none focus:ring-0 focus:outline-none text-white resize-none outline-none py-2 text-sm leading-relaxed caret-[#7b68ee] box-border sm:w-auto sm:flex-1 sm:order-none sm:py-2"
+              rows={1}
+              style={{ transition: "height 0.1s ease-out" }}
+            />
 
-          <ModelSelector 
-            value={model} 
-            onChange={(val) => {
-              setModel(val);
-              localStorage.setItem("preferred_model", val);
-            }} 
-            direction="down" 
-          />
-          {(message.trim() || imageFile || docFile) && (
-            <button 
-              onClick={handleSend} 
-              disabled={askMutation.isPending} 
-              style={{ 
-                background: "linear-gradient(135deg, #6c5ce7, #7b68ee)", 
-                border: "none", 
-                borderRadius: "10px", 
-                padding: "8px", 
-                color: "#fff", 
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                minWidth: "36px",
-                height: "36px"
-              }}
-            >
-              <Send size={16} />
-            </button>
-          )}
+            <div className="order-2 ml-auto shrink-0 flex items-center sm:order-none sm:ml-0">
+              <ModelSelector 
+                value={model} 
+                onChange={(val) => {
+                  setModel(val);
+                  localStorage.setItem("preferred_model", val);
+                }} 
+                direction="down" 
+              />
+            </div>
+            {(message.trim() || imageFile || docFile) && (
+              <button 
+                onClick={handleSend} 
+                disabled={askMutation.isPending} 
+                className="order-3 shrink-0 sm:order-none"
+                style={{ 
+                  background: "linear-gradient(135deg, #6c5ce7, #7b68ee)", 
+                  border: "none", 
+                  borderRadius: "10px", 
+                  padding: "8px", 
+                  color: "#fff", 
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minWidth: "36px",
+                  height: "36px"
+                }}
+              >
+                <Send size={16} />
+              </button>
+            )}
           </div>
         </div>
       </section>

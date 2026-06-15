@@ -122,6 +122,13 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
             display: block !important;
           }
         }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none !important;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none !important;
+          scrollbar-width: none !important;
+        }
       `}</style>
 
       {/* Desktop sidebar */}
@@ -189,6 +196,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
           isSidebarCollapsed={!desktopSidebarOpen}
         />
         <main
+          className="no-scrollbar"
           style={{
             flex: 1,
             overflowY: "auto",

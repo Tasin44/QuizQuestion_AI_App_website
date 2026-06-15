@@ -180,7 +180,9 @@ export default function ChatDetailPage() {
     const ta = textareaRef.current;
     if (ta) {
       ta.style.height = "auto";
-      ta.style.height = Math.min(ta.scrollHeight, 120) + "px";
+      const targetHeight = ta.scrollHeight;
+      ta.style.height = Math.min(targetHeight, 200) + "px";
+      ta.style.overflowY = targetHeight > 200 ? "auto" : "hidden";
     }
   }, [message]);
 
@@ -321,7 +323,7 @@ export default function ChatDetailPage() {
       </div>
 
       {/* Messages */}
-      <div style={{ flex: 1, padding: "24px 32px 20px", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+      <div className="no-scrollbar" style={{ flex: 1, padding: "24px 32px 20px", overflowY: "auto", display: "flex", flexDirection: "column" }}>
         <div style={{ maxWidth: "960px", width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", gap: "20px" }}>
         {isLoading && (
           <div style={{ display: "flex", justifyContent: "center", padding: "40px 0" }}>
@@ -575,21 +577,10 @@ export default function ChatDetailPage() {
           }}
         >
           {/* Chat Input Container */}
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              alignItems: "flex-end",
-              gap: "8px",
-              backgroundColor: "#16161f",
-              border: "1px solid rgba(255,255,255,0.09)",
-              borderRadius: "16px",
-              padding: "8px",
-            }}
-          >
+          <div className="w-full bg-[#16161f] border border-[rgba(255,255,255,0.09)] rounded-2xl p-2 px-3 flex flex-wrap gap-2 items-center shadow-2xl box-border sm:flex-nowrap sm:gap-2 sm:items-end">
             {/* Image upload */}
             <button
-              className="attach-btn"
+              className="attach-btn order-1 flex items-center justify-center shrink-0 sm:order-none"
               onClick={() => imageInputRef.current?.click()}
               title="Attach image"
               style={{
@@ -626,7 +617,7 @@ export default function ChatDetailPage() {
 
             {/* File upload */}
             <button
-              className="attach-btn"
+              className="attach-btn order-1 flex items-center justify-center shrink-0 sm:order-none"
               onClick={() => fileInputRef.current?.click()}
               title="Attach file"
               style={{
@@ -667,23 +658,12 @@ export default function ChatDetailPage() {
               onKeyDown={handleKeyDown}
               placeholder="Type your question..."
               rows={1}
-              style={{
-                flex: 1,
-                background: "none",
-                border: "none",
-                outline: "none",
-                color: "#ffffff",
-                fontSize: "14px",
-                resize: "none",
-                lineHeight: "1.5",
-                padding: "7px 4px",
-                maxHeight: "120px",
-                fontFamily: "inherit",
-              }}
+              className="w-full flex-none order-first bg-transparent border-none focus:ring-0 focus:outline-none text-white resize-none outline-none py-2 text-sm leading-relaxed caret-[#7b68ee] box-border sm:w-auto sm:flex-1 sm:order-none sm:py-2"
+              style={{ transition: "height 0.1s ease-out" }}
             />
 
             {/* Model Selector inside input field on the right side */}
-            <div style={{ flexShrink: 0, alignSelf: "flex-end", paddingBottom: "1px" }}>
+            <div className="order-2 ml-auto shrink-0 flex items-center sm:order-none sm:ml-0" style={{ paddingBottom: "1px" }}>
               <ModelSelector
                 size="sm"
                 value={model}
@@ -699,6 +679,7 @@ export default function ChatDetailPage() {
 
             {/* Send button (animates and displays only when input is typed or file uploaded) */}
             <div
+              className="order-3 shrink-0 sm:order-none"
               style={{
                 width: (message.trim() || imageFile || docFile || askMutation.isPending) ? "36px" : "0px",
                 marginLeft: (message.trim() || imageFile || docFile || askMutation.isPending) ? "4px" : "0px",
@@ -753,6 +734,13 @@ export default function ChatDetailPage() {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none !important;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none !important;
+          scrollbar-width: none !important;
+        }
       `}</style>
     </div>
   );

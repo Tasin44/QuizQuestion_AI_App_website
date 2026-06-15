@@ -37,13 +37,55 @@ export default function Footer() {
       style={{
         borderTop: "1px solid rgba(255,255,255,0.06)",
         backgroundColor: "#0A0A0F",
-        padding: "50px 40px 30px",
+        padding: "50px 20px 30px",
         width: "100%",
         boxSizing: "border-box",
       }}
     >
+      <style>{`
+        .footer-top {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 40px;
+          gap: 30px;
+        }
+        .footer-bottom {
+          border-top: 1px solid rgba(255,255,255,0.06);
+          padding-top: 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 20px;
+        }
+        .footer-social-row {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+        .footer-follow-text {
+          text-align: right;
+        }
+        @media (max-width: 768px) {
+          .footer-top {
+            flex-direction: column;
+            gap: 30px;
+          }
+          .footer-bottom {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+          }
+          .footer-social-row {
+            justify-content: flex-start;
+          }
+          .footer-follow-text {
+            text-align: left;
+          }
+        }
+      `}</style>
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "40px" }}>
+        <div className="footer-top">
           {/* Logo & Tagline */}
           <div style={{ maxWidth: "280px" }}>
             <img
@@ -92,23 +134,15 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div
-          style={{
-            borderTop: "1px solid rgba(255,255,255,0.06)",
-            paddingTop: "20px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+        <div className="footer-bottom">
           <p style={{ color: "rgba(255,255,255,0.25)", fontSize: "12px", margin: 0 }}>
             © 2026 Quiz Question AI. All rights reserved.
           </p>
           <div>
-            <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "12px", margin: "0 0 10px", textAlign: "right" }}>
+            <p className="footer-follow-text" style={{ color: "rgba(255,255,255,0.45)", fontSize: "12px", margin: "0 0 10px" }}>
               Follow us for updates
             </p>
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "flex-end" }}>
+            <div className="footer-social-row">
               {socialLinks.map(({ label, href, icon: Icon }) => (
                 <a
                   key={label}
