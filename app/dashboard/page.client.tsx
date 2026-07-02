@@ -87,6 +87,27 @@ const markdownComponents = {
   ul: ({ children, ...props }: any) => <ul style={{ margin: "6px 0", paddingLeft: "20px", listStyleType: "disc" }} {...props}>{children}</ul>,
   ol: ({ children, ...props }: any) => <ol style={{ margin: "6px 0", paddingLeft: "20px" }} {...props}>{children}</ol>,
   li: ({ children, ...props }: any) => <li style={{ margin: "4px 0", lineHeight: "1.6", color: "inherit" }} {...props}>{children}</li>,
+  code: ({ children, className, ...props }: any) => {
+    if (className?.startsWith("language-")) {
+      return <code style={{ color: "#e2e8f0", background: "none", padding: 0, fontFamily: "monospace", fontSize: "13px" }} {...props}>{children}</code>;
+    }
+    return <code style={{ backgroundColor: "rgba(255,255,255,0.1)", padding: "2px 6px", borderRadius: "4px", fontSize: "12px", fontFamily: "monospace", color: "#ef4444" }} {...props}>{children}</code>;
+  },
+  pre: ({ children, ...props }: any) => (
+    <pre style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: "14px 16px", borderRadius: "10px", fontFamily: "monospace", fontSize: "13px", overflowX: "auto", maxWidth: "100%", margin: "10px 0", border: "1px solid rgba(255,255,255,0.06)", color: "#e2e8f0", lineHeight: 1.6 }} {...props}>
+      {children}
+    </pre>
+  ),
+  blockquote: ({ children, ...props }: any) => (
+    <blockquote style={{ borderLeft: "3px solid rgba(108,92,231,0.5)", paddingLeft: "14px", margin: "10px 0", color: "rgba(255,255,255,0.6)", fontStyle: "italic" }} {...props}>
+      {children}
+    </blockquote>
+  ),
+  a: ({ children, href, ...props }: any) => (
+    <a href={href} style={{ color: "#7b68ee", textDecoration: "underline" }} target="_blank" rel="noreferrer" {...props}>
+      {children}
+    </a>
+  ),
   table: ({ children, ...props }: any) => <div style={{ overflowX: "auto", margin: "10px 0" }}><table style={{ borderCollapse: "collapse", width: "100%", fontSize: "13px" }} {...props}>{children}</table></div>,
   th: ({ children, ...props }: any) => <th style={{ borderBottom: "1px solid rgba(255,255,255,0.12)", padding: "8px 12px", textAlign: "left", color: "#fff", fontWeight: 600 }} {...props}>{children}</th>,
   td: ({ children, ...props }: any) => <td style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "8px 12px", color: "rgba(255,255,255,0.75)" }} {...props}>{children}</td>,
@@ -252,10 +273,10 @@ export default function ClientDashboard() {
             {messages.map((msg) => (
               <div key={msg.id} className="chat-msg" style={{ display: "flex", gap: "12px", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
                 {msg.role === "assistant" && (
-                  <div style={{ width: "38px", height: "38px", borderRadius: "12px", background: "linear-gradient(135deg, #6c5ce7, #7b68ee)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}><Bot size={20} /></div>
+                  <div className="hidden sm:flex" style={{ width: "38px", height: "38px", borderRadius: "12px", background: "linear-gradient(135deg, #6c5ce7, #7b68ee)", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}><Bot size={20} /></div>
                 )}
-                <div style={{ maxWidth: "75%", display: "flex", flexDirection: "column", gap: "4px", textAlign: "left" }}>
-                  <div style={{ padding: "14px 18px", borderRadius: "18px", backgroundColor: msg.role === "user" ? "#4F46E5" : "#15151f", border: msg.role === "assistant" ? "1px solid rgba(255,255,255,0.07)" : "none", color: "#fff" }}>
+                <div className={msg.role === "assistant" ? "w-full max-w-full sm:w-auto sm:max-w-[75%]" : "max-w-[88%] sm:max-w-[75%]"} style={{ display: "flex", flexDirection: "column", gap: "4px", textAlign: "left", minWidth: 0 }}>
+                  <div style={{ padding: "14px 18px", borderRadius: "18px", backgroundColor: msg.role === "user" ? "#4F46E5" : "#15151f", border: msg.role === "assistant" ? "1px solid rgba(255,255,255,0.07)" : "none", color: "#fff", minWidth: 0 }}>
                   {msg.role === "assistant" ? (
                     <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={markdownComponents}>{preprocessMarkdown(msg.content)}</ReactMarkdown>
                   ) : (

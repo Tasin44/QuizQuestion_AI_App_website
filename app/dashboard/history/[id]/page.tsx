@@ -88,7 +88,7 @@ const mdComponents = {
     if (className?.startsWith("language-")) return <code style={{ color: "#e2e8f0", background: "none", padding: 0, fontFamily: "monospace", fontSize: "13px" }} {...p}>{children}</code>;
     return <code style={{ backgroundColor: "rgba(255,255,255,0.1)", padding: "2px 6px", borderRadius: "4px", fontSize: "12px", fontFamily: "monospace", color: "#ef4444" }} {...p}>{children}</code>;
   },
-  pre: ({ children, ...p }: React.ComponentProps<"pre">) => <pre style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: "14px 16px", borderRadius: "10px", fontFamily: "monospace", fontSize: "13px", overflowX: "auto", margin: "10px 0", border: "1px solid rgba(255,255,255,0.06)", color: "#e2e8f0", lineHeight: 1.6 }} {...p}>{children}</pre>,
+  pre: ({ children, ...p }: React.ComponentProps<"pre">) => <pre style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: "14px 16px", borderRadius: "10px", fontFamily: "monospace", fontSize: "13px", overflowX: "auto", maxWidth: "100%", margin: "10px 0", border: "1px solid rgba(255,255,255,0.06)", color: "#e2e8f0", lineHeight: 1.6 }} {...p}>{children}</pre>,
   blockquote: ({ children, ...p }: React.ComponentProps<"blockquote">) => <blockquote style={{ borderLeft: "3px solid rgba(108,92,231,0.5)", paddingLeft: "14px", margin: "10px 0", color: "rgba(255,255,255,0.6)", fontStyle: "italic" }} {...p}>{children}</blockquote>,
   a: ({ children, href, ...p }: React.ComponentProps<"a">) => <a href={href} style={{ color: "#7b68ee", textDecoration: "underline" }} target="_blank" rel="noreferrer" {...p}>{children}</a>,
   table: ({ children, ...p }: React.ComponentProps<"table">) => <div style={{ overflowX: "auto", margin: "10px 0" }}><table style={{ borderCollapse: "collapse", width: "100%", fontSize: "13px" }} {...p}>{children}</table></div>,
@@ -323,7 +323,7 @@ export default function ChatDetailPage() {
       </div>
 
       {/* Messages */}
-      <div className="no-scrollbar" style={{ flex: 1, padding: "24px 32px 20px", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+      <div className="no-scrollbar flex-1 overflow-y-auto flex flex-col px-4 py-6 sm:px-8 sm:py-6">
         <div style={{ maxWidth: "960px", width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", gap: "20px" }}>
         {isLoading && (
           <div style={{ display: "flex", justifyContent: "center", padding: "40px 0" }}>
@@ -363,12 +363,12 @@ export default function ChatDetailPage() {
             {/* AI Avatar */}
             {msg.role === "assistant" && (
               <div
+                className="hidden sm:flex"
                 style={{
                   width: "38px",
                   height: "38px",
                   borderRadius: "12px",
                   background: "linear-gradient(135deg, #6c5ce7, #7b68ee)",
-                  display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   color: "#fff",
@@ -381,11 +381,12 @@ export default function ChatDetailPage() {
             )}
 
             <div
+              className={msg.role === "assistant" ? "w-full max-w-full sm:w-auto sm:max-w-[75%]" : "max-w-[88%] sm:max-w-[75%]"}
               style={{
-                maxWidth: "75%",
                 display: "flex",
                 flexDirection: "column",
                 gap: "4px",
+                minWidth: 0,
               }}
             >
               {msg.role === "assistant" && (
@@ -425,6 +426,7 @@ export default function ChatDetailPage() {
                   boxShadow: msg.role === "user"
                     ? "0 2px 12px rgba(79,70,229,0.25)"
                     : "0 1px 4px rgba(0,0,0,0.2)",
+                  minWidth: 0,
                 }}
               >
                 <div
@@ -453,12 +455,12 @@ export default function ChatDetailPage() {
             {/* User Avatar */}
             {msg.role === "user" && (
               <div
+                className="hidden sm:flex"
                 style={{
                   width: "38px",
                   height: "38px",
                   borderRadius: "12px",
                   background: "linear-gradient(135deg, #f59e0b, #ef4444)",
-                  display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   color: "#fff",
