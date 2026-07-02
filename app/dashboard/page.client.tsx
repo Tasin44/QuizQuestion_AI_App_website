@@ -67,13 +67,31 @@ function TypingIndicator() {
 
 const preprocessMarkdown = (content: string) => {
   if (!content) return "";
-  // Replace block math delimiters \[ \] with $$
-  let processed = content
-    .replace(/\\+\[/g, "$$$$\n")
-    .replace(/\\+\]/g, "\n$$$$")
-    .replace(/\\+\(/g, "$$")
-    .replace(/\\+\)/g, "$$");
-  return processed;
+  
+  return content
+    .split(/\n\s*\n/)
+    .map((paragraph) => {
+      // Replace block math delimiters \[ \] or \[ ] with $$
+      // Replace inline math delimiters \( \) or \( ) with $
+      let processed = paragraph
+        .replace(/\\+\[([\s\S]*?)(?:\\+\]|\])/g, "$$$$\n$1\n$$$$")
+        .replace(/\\+\(([\s\S]*?)(?:\\+\)|\))/g, "$$$1$$");
+
+      // Defensive auto-close for unbalanced block math ($$) inside this paragraph
+      const doubleDollarCount = (processed.match(/\$\$/g) || []).length;
+      if (doubleDollarCount % 2 !== 0) {
+        processed += "\n$$";
+      }
+
+      // Defensive auto-close for unbalanced inline math ($) inside this paragraph
+      const singleDollarCount = (processed.replace(/\$\$/g, "").match(/\$/g) || []).length;
+      if (singleDollarCount % 2 !== 0) {
+        processed += "$";
+      }
+
+      return processed;
+    })
+    .join("\n\n");
 };
 
 /* ───── Markdown components for react-markdown ───── */
