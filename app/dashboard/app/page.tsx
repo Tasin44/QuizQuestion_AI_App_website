@@ -142,7 +142,7 @@ export default function AppPage() {
             <div className="store-buttons-container">
               {/* Google Play */}
               <a
-                href="#"
+                href="https://play.google.com/store/apps/details?id=com.quiz_question_ai"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -171,7 +171,7 @@ export default function AppPage() {
 
               {/* App Store */}
               <a
-                href="#"
+                href="https://apps.apple.com/us/app/quiz-question-al-study-pro/id6782490375"
                 style={{
                   display: "flex",
                   alignItems: "center",

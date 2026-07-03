@@ -27,11 +27,20 @@ export default function DevicesSection() {
 
           {/* App Store Badges */}
           <div style={{ display: "flex", gap: "12px" }}>
-            <img
-              src="/images/apple.png"
-              alt="Get it on Google Play and App Store"
-              style={{ height: "44px", objectFit: "contain", borderRadius: "8px" }}
-            />
+            <a href="https://play.google.com/store/apps/details?id=com.quiz_question_ai" target="_blank" rel="noopener noreferrer">
+              <img
+                src="/images/google.svg"
+                alt="Get it on Google Play"
+                style={{ height: "44px", objectFit: "contain", borderRadius: "8px" }}
+              />
+            </a>
+            <a href="https://apps.apple.com/us/app/quiz-question-al-study-pro/id6782490375" target="_blank" rel="noopener noreferrer">
+              <img
+                src="/images/apple.png"
+                alt="Download on the App Store"
+                style={{ height: "44px", objectFit: "contain", borderRadius: "8px" }}
+              />
+            </a>
           </div>
         </div>
 

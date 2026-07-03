@@ -3,7 +3,7 @@ const plans = [
   { 
     name: "Monthly Plan", 
     price: "$7.99", 
-    period: "/week", 
+    period: "/month", 
     features: [
       { text: "Unlimited AI questions", ok: true }, 
       { text: "All AI models (GPT-4o, Claude, Gemini)", ok: true }, 

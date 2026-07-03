@@ -4,7 +4,7 @@ const plans = [
   {
     name: "Weekly",
     price: "$7.99",
-    period: "/week",
+    period: "/month",
     features: [
       { text: "Unlimited AI questions", included: true },
       { text: "All AI models (GPT-4o, Claude, Gemini)", included: true },
@@ -205,15 +205,15 @@ export default function PricingSection() {
                 transition: "all 0.2s ease",
                 ...(plan.buttonStyle === "filled"
                   ? {
-                      backgroundColor: "#4F46E5",
-                      border: "none",
-                      color: "#ffffff",
-                    }
+                    backgroundColor: "#4F46E5",
+                    border: "none",
+                    color: "#ffffff",
+                  }
                   : {
-                      backgroundColor: "transparent",
-                      border: "1px solid rgba(255,255,255,0.15)",
-                      color: "rgba(255,255,255,0.8)",
-                    }),
+                    backgroundColor: "transparent",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    color: "rgba(255,255,255,0.8)",
+                  }),
               }}
               onMouseEnter={(e) => {
                 if (plan.buttonStyle === "filled") {
