@@ -11,7 +11,7 @@ import DevicesSection from "./_components/sections/DevicesSection";
 import ModelSelector from "./_components/ModelSelector";
 import { useMutation } from "@tanstack/react-query";
 import { askChatFormData, type ChatAskModel } from "@/app/(auth)/_lib/api";
-import { Bot, User, Image as ImageIcon, Paperclip, Send } from "lucide-react";
+import { Bot, User, Image as ImageIcon, Paperclip, Send, Copy, Check } from "lucide-react";
 import { useChatContext } from "./_components/ChatContext";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
@@ -26,6 +26,7 @@ interface ChatMessage {
   model: string;
   timestamp: Date;
   attachments?: { name: string; type: "image" | "file" }[];
+  imageUrl?: string;
 }
 
 /* ───── Model label map ───── */
@@ -67,31 +68,11 @@ function TypingIndicator() {
 
 const preprocessMarkdown = (content: string) => {
   if (!content) return "";
-  
   return content
-    .split(/\n\s*\n/)
-    .map((paragraph) => {
-      // Replace block math delimiters \[ \] or \[ ] with $$
-      // Replace inline math delimiters \( \) or \( ) with $
-      let processed = paragraph
-        .replace(/\\+\[([\s\S]*?)(?:\\+\]|\])/g, "$$$$\n$1\n$$$$")
-        .replace(/\\+\(([\s\S]*?)(?:\\+\)|\))/g, "$$$1$$");
-
-      // Defensive auto-close for unbalanced block math ($$) inside this paragraph
-      const doubleDollarCount = (processed.match(/\$\$/g) || []).length;
-      if (doubleDollarCount % 2 !== 0) {
-        processed += "\n$$";
-      }
-
-      // Defensive auto-close for unbalanced inline math ($) inside this paragraph
-      const singleDollarCount = (processed.replace(/\$\$/g, "").match(/\$/g) || []).length;
-      if (singleDollarCount % 2 !== 0) {
-        processed += "$";
-      }
-
-      return processed;
-    })
-    .join("\n\n");
+    .replace(/\\+\[/g, "$$")
+    .replace(/\\+\]/g, "$$")
+    .replace(/\\+\(/g, "$")
+    .replace(/\\+\)/g, "$");
 };
 
 /* ───── Markdown components for react-markdown ───── */
@@ -109,7 +90,7 @@ const markdownComponents = {
     if (className?.startsWith("language-")) {
       return <code style={{ color: "#e2e8f0", background: "none", padding: 0, fontFamily: "monospace", fontSize: "13px" }} {...props}>{children}</code>;
     }
-    return <code style={{ backgroundColor: "rgba(255,255,255,0.1)", padding: "2px 6px", borderRadius: "4px", fontSize: "12px", fontFamily: "monospace", color: "#ef4444" }} {...props}>{children}</code>;
+    return <code style={{ backgroundColor: "rgba(255,255,255,0.1)", padding: "2px 6px", borderRadius: "4px", fontSize: "12px", fontFamily: "monospace", color: "#e2e8f0" }} {...props}>{children}</code>;
   },
   pre: ({ children, ...props }: any) => (
     <pre style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: "14px 16px", borderRadius: "10px", fontFamily: "monospace", fontSize: "13px", overflowX: "auto", maxWidth: "100%", margin: "10px 0", border: "1px solid rgba(255,255,255,0.06)", color: "#e2e8f0", lineHeight: 1.6 }} {...props}>
@@ -137,7 +118,21 @@ export default function ClientDashboard() {
   const [model, setModel] = useState("auto");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [docFile, setDocFile] = useState<File | null>(null);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+
+  // Generate preview URL when imageFile changes
+  useEffect(() => {
+    if (imageFile) {
+      const url = URL.createObjectURL(imageFile);
+      setImagePreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setImagePreviewUrl(null);
+    }
+  }, [imageFile]);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -205,6 +200,9 @@ export default function ClientDashboard() {
     const trimmed = message.trim();
     if (!trimmed && !imageFile && !docFile) return;
 
+    // Capture the preview URL before clearing state
+    const currentImagePreviewUrl = imagePreviewUrl;
+
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
       role: "user",
@@ -215,6 +213,7 @@ export default function ClientDashboard() {
         ...(imageFile ? [{ name: imageFile.name, type: "image" as const }] : []),
         ...(docFile ? [{ name: docFile.name, type: "file" as const }] : []),
       ],
+      imageUrl: currentImagePreviewUrl || undefined,
     };
     
     setMessages((prev) => [...prev, userMsg]);
@@ -248,6 +247,40 @@ export default function ClientDashboard() {
 
   return (
     <div style={{ backgroundColor: "#0A0A0F", minHeight: "100vh" }}>
+      {/* Lightbox overlay */}
+      {lightboxUrl && (
+        <div
+          onClick={() => setLightboxUrl(null)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 9999,
+            backgroundColor: "rgba(0,0,0,0.88)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            animation: "lightboxFadeIn 0.2s ease",
+            cursor: "zoom-out",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ position: "relative", animation: "lightboxZoomIn 0.2s ease" }}
+          >
+            <img
+              src={lightboxUrl}
+              alt="Full preview"
+              style={{ maxWidth: "90vw", maxHeight: "88vh", borderRadius: "14px", boxShadow: "0 20px 60px rgba(0,0,0,0.8)", objectFit: "contain" }}
+            />
+            <button
+              onClick={() => setLightboxUrl(null)}
+              style={{
+                position: "absolute", top: "-12px", right: "-12px",
+                width: "28px", height: "28px", borderRadius: "50%",
+                background: "rgba(30,30,40,0.95)", border: "1.5px solid rgba(255,255,255,0.25)",
+                color: "#fff", cursor: "pointer", fontSize: "15px",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >&times;</button>
+          </div>
+        </div>
+      )}
       <style>{`
         @keyframes typingBounce {
           0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
@@ -261,6 +294,20 @@ export default function ClientDashboard() {
         .no-scrollbar {
           -ms-overflow-style: none !important;
           scrollbar-width: none !important;
+        }
+        .chat-img-thumb {
+          cursor: zoom-in;
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .chat-img-thumb:hover {
+          transform: scale(1.04);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+        @keyframes lightboxFadeIn {
+          from { opacity: 0; } to { opacity: 1; }
+        }
+        @keyframes lightboxZoomIn {
+          from { transform: scale(0.88); opacity: 0; } to { transform: scale(1); opacity: 1; }
         }
       `}</style>
 
@@ -288,7 +335,8 @@ export default function ClientDashboard() {
             width: "100%", maxWidth: "960px", maxHeight: "calc(100vh - 220px)",
             overflowY: "auto", marginBottom: "20px", display: "flex", flexDirection: "column", gap: "20px", padding: "20px 8px"
           }}>
-            {messages.map((msg) => (
+            {messages.map((msg, msgIndex) => {
+              return (
               <div key={msg.id} className="chat-msg" style={{ display: "flex", gap: "12px", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
                 {msg.role === "assistant" && (
                   <div className="hidden sm:flex" style={{ width: "38px", height: "38px", borderRadius: "12px", background: "linear-gradient(135deg, #6c5ce7, #7b68ee)", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}><Bot size={20} /></div>
@@ -296,14 +344,44 @@ export default function ClientDashboard() {
                 <div className={msg.role === "assistant" ? "w-full max-w-full sm:w-auto sm:max-w-[75%]" : "max-w-[88%] sm:max-w-[75%]"} style={{ display: "flex", flexDirection: "column", gap: "4px", textAlign: "left", minWidth: 0 }}>
                   <div style={{ padding: "14px 18px", borderRadius: "18px", backgroundColor: msg.role === "user" ? "#4F46E5" : "#15151f", border: msg.role === "assistant" ? "1px solid rgba(255,255,255,0.07)" : "none", color: "#fff", minWidth: 0 }}>
                   {msg.role === "assistant" ? (
-                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={markdownComponents}>{preprocessMarkdown(msg.content)}</ReactMarkdown>
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} components={markdownComponents}>{preprocessMarkdown(msg.content)}</ReactMarkdown>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(msg.content);
+                          setCopiedMessageId(msg.id);
+                          setTimeout(() => setCopiedMessageId(null), 2000);
+                        }}
+                        style={{
+                          background: "none", border: "none", color: copiedMessageId === msg.id ? "#10b981" : "rgba(255,255,255,0.4)",
+                          cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", fontSize: "12px",
+                          marginTop: "12px", alignSelf: "flex-end", padding: "4px 8px", borderRadius: "6px", transition: "all 0.2s ease"
+                        }}
+                        title="Copy response"
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      >
+                        {copiedMessageId === msg.id ? <Check size={14} /> : <Copy size={14} />} {copiedMessageId === msg.id ? "Copied!" : "Copy"}
+                      </button>
+                    </div>
                   ) : (
                     <>
-                      {msg.attachments && msg.attachments.length > 0 && (
+                      {msg.imageUrl && (
+                        <div style={{ marginBottom: msg.content ? "8px" : "0" }}>
+                          <img
+                            src={msg.imageUrl}
+                            alt="Attached"
+                            className="chat-img-thumb"
+                            onClick={() => setLightboxUrl(msg.imageUrl!)}
+                            style={{ maxWidth: "180px", maxHeight: "140px", objectFit: "cover", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.15)" }}
+                          />
+                        </div>
+                      )}
+                      {msg.attachments && msg.attachments.filter(a => a.type !== "image").length > 0 && (
                         <div style={{ display: "flex", gap: "6px", marginBottom: msg.content ? "8px" : "0", flexWrap: "wrap" }}>
-                          {msg.attachments.map((att, i) => (
+                          {msg.attachments.filter(a => a.type !== "image").map((att, i) => (
                             <span key={i} style={{ background: "rgba(0,0,0,0.2)", padding: "4px 8px", borderRadius: "6px", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
-                              {att.type === "image" ? <ImageIcon size={12} style={{ color: "rgba(255,255,255,0.7)" }} /> : <Paperclip size={12} style={{ color: "rgba(255,255,255,0.7)" }} />} <span style={{ maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{att.name}</span>
+                              <Paperclip size={12} style={{ color: "rgba(255,255,255,0.7)" }} /> <span style={{ maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{att.name}</span>
                             </span>
                           ))}
                         </div>
@@ -314,7 +392,8 @@ export default function ClientDashboard() {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
             {askMutation.isPending && <div style={{ textAlign: "left" }}><TypingIndicator /></div>}
             <div ref={chatEndRef} />
           </div>
@@ -323,10 +402,10 @@ export default function ClientDashboard() {
         <div style={{ width: "100%", maxWidth: "960px", display: "flex", flexDirection: "column", gap: "8px", textAlign: "left" }}>
           {(imageFile || docFile) && (
             <div style={{ display: "flex", gap: "8px", padding: "0 4px", flexWrap: "wrap" }}>
-              {imageFile && (
-                <div style={{ background: "rgba(255,255,255,0.1)", padding: "6px 12px", borderRadius: "12px", fontSize: "13px", color: "#eee", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <ImageIcon size={13} style={{ color: "rgba(255,255,255,0.7)" }} /> <span style={{ maxWidth: "150px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{imageFile.name}</span>
-                  <button onClick={() => setImageFile(null)} style={{ background: "none", border: "none", color: "#ff4757", cursor: "pointer", padding: "0 0 0 4px", fontSize: "14px", lineHeight: 1 }}>&times;</button>
+              {imageFile && imagePreviewUrl && (
+                <div style={{ position: "relative", display: "inline-block" }}>
+                  <img src={imagePreviewUrl} alt="Preview" style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.15)" }} />
+                  <button onClick={() => setImageFile(null)} style={{ position: "absolute", top: "-6px", right: "-6px", width: "20px", height: "20px", borderRadius: "50%", background: "rgba(0,0,0,0.7)", border: "1.5px solid rgba(255,255,255,0.3)", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", lineHeight: 1, padding: 0 }}>&times;</button>
                 </div>
               )}
               {docFile && (
@@ -359,7 +438,14 @@ export default function ClientDashboard() {
               type="file"
               accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
               hidden
-              onChange={(e) => setDocFile(e.target.files?.[0] || null)}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f && f.type.startsWith('image/')) {
+                  setImageFile(f);
+                } else {
+                  setDocFile(f || null);
+                }
+              }}
               onClick={(e) => { (e.target as HTMLInputElement).value = '' }}
             />
             
