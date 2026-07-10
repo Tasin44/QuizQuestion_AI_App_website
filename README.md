@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Quiz Question AI 🎓🤖
 
-## Getting Started
+An intelligent, AI-powered homework and educational companion built to help students solve problems, understand complex concepts, and write essays seamlessly. 
 
-First, run the development server:
+This project demonstrates a production-ready modern web application emphasizing responsive design, multi-language support, real-time AI capabilities, and scalable containerized deployment.
+
+## ✨ Key Features
+
+- **Multimodal AI Chat:** Interact with advanced AI models (GPT-4o, Claude, Gemini) using text, image, and document uploads.
+- **Subject-Specific Tools:** Specialized handling for subjects like Math (with a built-in interactive calculator), Physics, Chemistry, Biology, and Literature.
+- **Multi-Language Support (i18n):** Real-time UI localization allowing users to switch between **English, Arabic, Spanish, and French** seamlessly without page reloads.
+- **Modern, Premium UI:** A sleek, fully responsive dark-mode interface built with custom CSS, micro-animations, and glassmorphism.
+- **Persistent Chat History:** Securely saves user chat sessions, categorized automatically by subject based on the query.
+- **Full Authentication System:** Secure login, registration, and user session management.
+- **Dockerized Environment:** Easy local development and deployment with a configured `docker-compose` setup.
+
+## 🛠️ Tech Stack
+
+- **Frontend:** [Next.js (App Router)](https://nextjs.org/), React 18, TypeScript
+- **Styling:** Vanilla CSS & TailwindCSS (for utility classes), Framer Motion-like custom animations
+- **Data Fetching & State:** React Query (`@tanstack/react-query`)
+- **Icons & Typography:** `lucide-react`, `react-icons`, Google Fonts
+- **Markdown Rendering:** `react-markdown`, `remark-math`, `rehype-katex` (for beautiful math equations)
+- **Containerization:** Docker & Docker Compose
+
+## 🚀 Getting Started
+
+You can run this project locally with Docker or via standard Node.js commands.
+
+### Option 1: Using Docker (Recommended)
+
+Make sure you have Docker and Docker Compose installed.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+# Clone the repository
+git clone https://github.com/ShiponChowdhury1/Quiz-Question.git
 
+# Navigate to the project directory
+cd Quiz-Question
+
+# Build and start the container
+docker compose up --build -d
+```
+The application will be running at `http://localhost:3005`.
+
+### Option 2: Manual Setup
+
+If you prefer to run it locally without Docker:
+
+```bash
+# Install dependencies
+npm install
+
+# Run the development server
+npm run dev
+```
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Project Structure highlights
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `/app/(auth)` - Authentication pages and API lib
+- `/app/dashboard` - The core application interface (Chat, History, Settings)
+- `/app/dashboard/_components/translations.ts` - Centralized multi-language dictionary
+- `/app/dashboard/_components/useLanguage.ts` - Custom hook driving the real-time reactivity of the i18n system.
 
-## Learn More
+## 👨‍💻 Author
 
-To learn more about Next.js, take a look at the following resources:
+**Shipon Chowdhury**
+Passionate Full-Stack Developer creating scalable, user-centric web applications. Always exploring new technologies to build better digital experiences. 
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*If you are a recruiter or hiring manager viewing this project, feel free to explore the codebase. It reflects my dedication to writing clean, maintainable code, robust feature implementations (like the reactive translation system), and building intuitive user experiences.*
