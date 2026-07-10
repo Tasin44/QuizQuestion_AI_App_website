@@ -1,4 +1,5 @@
 "use client";
+import { useLanguage } from "../useLanguage";
 
 const models = [
   {
@@ -22,6 +23,7 @@ const models = [
 ];
 
 export default function AIModelSection() {
+  const { t } = useLanguage();
   return (
     <section id="ai-models" style={{ padding: "80px 20px", textAlign: "center", maxWidth: "1200px", margin: "0 auto" }}>
       <style>{`
@@ -41,7 +43,7 @@ export default function AIModelSection() {
           }
         }
       `}</style>
-      <h2 style={{ color: "#ffffff", fontSize: "clamp(24px, 5vw, 34px)", fontWeight: 700, margin: "0 0 50px" }}>Choose Your AI Model</h2>
+      <h2 style={{ color: "#ffffff", fontSize: "clamp(24px, 5vw, 34px)", fontWeight: 700, margin: "0 0 50px" }}>{t("Choose Your AI Model")}</h2>
       <div className="ai-model-grid">
         {models.map((m) => {
           return (
@@ -54,7 +56,7 @@ export default function AIModelSection() {
                 </div>
               </div>
               <h3 style={{ color: "#ffffff", fontSize: "18px", fontWeight: 600, margin: "0 0 10px" }}>{m.name}</h3>
-              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "13px", margin: 0, lineHeight: 1.6 }}>{m.desc}</p>
+              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "13px", margin: 0, lineHeight: 1.6 }}>{t(m.desc)}</p>
             </div>
           );
         })}

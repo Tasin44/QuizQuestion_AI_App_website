@@ -1,5 +1,7 @@
 "use client";
+import { useLanguage } from "../useLanguage";
 export default function DevicesSection() {
+  const { t } = useLanguage();
   return (
     <section id="mobile-app" style={{ padding: "80px 20px", maxWidth: "1200px", margin: "0 auto" }}>
       <style>{`
@@ -49,14 +51,14 @@ export default function DevicesSection() {
       `}</style>
       <div className="devices-layout">
         <div className="devices-text">
-          <h2 style={{ color: "#ffffff", fontSize: "34px", fontWeight: 700, margin: "0 0 6px", lineHeight: 1.2 }}>Quiz Question AI</h2>
-          <h2 style={{ color: "#ffffff", fontSize: "34px", fontWeight: 700, margin: "0 0 24px", lineHeight: 1.2 }}>Is Available for All Devices</h2>
+          <h2 style={{ color: "#ffffff", fontSize: "34px", fontWeight: 700, margin: "0 0 6px", lineHeight: 1.2 }}>{t("Quiz Question AI")}</h2>
+          <h2 style={{ color: "#ffffff", fontSize: "34px", fontWeight: 700, margin: "0 0 24px", lineHeight: 1.2 }}>{t("Is Available for All Devices")}</h2>
           <div className="devices-store-row" style={{ display: "flex", gap: "12px" }}>
             <a href="https://play.google.com/store/apps/details?id=com.quiz_question_ai" target="_blank" rel="noopener noreferrer">
-              <img src="/images/google.svg" alt="Get it on Google Play" style={{ height: "44px", objectFit: "contain", borderRadius: "8px" }} />
+              <img src="/images/google.svg" alt={t("Google Play")} style={{ height: "44px", objectFit: "contain", borderRadius: "8px" }} />
             </a>
             <a href="https://apps.apple.com/us/app/quiz-question-al-study-pro/id6782490375" target="_blank" rel="noopener noreferrer">
-              <img src="/images/apple.png" alt="Download on the App Store" style={{ height: "44px", objectFit: "contain", borderRadius: "8px" }} />
+              <img src="/images/apple.png" alt={t("App Store")} style={{ height: "44px", objectFit: "contain", borderRadius: "8px" }} />
             </a>
           </div>
         </div>

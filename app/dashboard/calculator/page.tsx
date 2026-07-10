@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { evaluate } from "mathjs";
 import ModelSelector from "../_components/ModelSelector";
+import { useLanguage } from "../_components/useLanguage";
 import { useMutation } from "@tanstack/react-query";
 import { askChat, type ChatAskModel } from "@/app/(auth)/_lib/api";
 import { Calculator, Sparkles } from "lucide-react";
@@ -77,6 +78,7 @@ function renderMessageContent(content: string) {
 }
 
 export default function CalculatorPage() {
+  const { t } = useLanguage();
   const [expression, setExpression] = useState("");
   const [history, setHistory] = useState<Array<{ expr: string; result: string }>>([]);
   const [model, setModel] = useState("auto");
@@ -175,14 +177,14 @@ export default function CalculatorPage() {
 
       <div style={{ width: "100%", display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
         <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "8px 14px", borderRadius: "20px", border: "1px solid rgba(255,255,255,0.1)", backgroundColor: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.8)", textDecoration: "none", fontSize: "13px", fontWeight: 500, transition: "all 0.2s ease" }}>
-          <span aria-hidden="true">←</span><span>Back to Chat</span>
+          <span aria-hidden="true">←</span><span>{t("Back to Chat")}</span>
         </Link>
       </div>
 
       {/* Calculator Card */}
       <div style={{ width: "100%", backgroundColor: "#111118", borderRadius: "14px", border: "1px solid rgba(255,255,255,0.06)", overflow: "visible", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>
         <div className="p-4 sm:p-7">
-          <h2 style={{ color: "#fff", fontSize: "20px", fontWeight: 600, margin: "0 0 24px", display: "flex", alignItems: "center", gap: "10px" }}><Calculator size={20} style={{ color: "#7b68ee" }} /> Math Calculator</h2>
+          <h2 style={{ color: "#fff", fontSize: "20px", fontWeight: 600, margin: "0 0 24px", display: "flex", alignItems: "center", gap: "10px" }}><Calculator size={20} style={{ color: "#7b68ee" }} /> {t("Math Calculator")}</h2>
 
           {/* Expression Display */}
           <div className="flex items-center bg-[#0f0f17] border border-[rgba(255,255,255,0.07)] rounded-xl p-3 px-4 sm:p-5 sm:px-6 mb-2">
@@ -191,7 +193,7 @@ export default function CalculatorPage() {
               value={expression}
               onChange={(e) => setExpression(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSolve(); } }}
-              placeholder="Enter equation..."
+              placeholder={t("Enter equation...")}
               className="text-base sm:text-2xl w-full min-w-0"
               style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#fff", fontWeight: 500, fontFamily: "monospace", letterSpacing: "1px", marginRight: "10px" }}
             />
@@ -289,7 +291,7 @@ export default function CalculatorPage() {
             >
               {askMutation.isPending ? (
                 <><div style={{ width: "14px", height: "14px", border: "2px solid rgba(123,104,238,0.3)", borderTopColor: "#7b68ee", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Explaining...</>
-              ) : <><Sparkles size={16} /> Explain with AI</>}
+              ) : <><Sparkles size={16} /> {t("Explain with AI")}</>}
             </button>
             <ModelSelector
               size="sm"

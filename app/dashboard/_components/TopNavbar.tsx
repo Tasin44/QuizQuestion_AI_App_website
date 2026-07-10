@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getProfile } from "@/app/(auth)/_lib/api";
 import { getAccessToken } from "@/app/(auth)/_lib/authStorage";
 import { ListCollapse } from "lucide-react";
+import { useLanguage } from "./useLanguage";
 
 interface TopNavbarProps {
   onLogout?: () => void;
@@ -16,6 +17,7 @@ export default function TopNavbar({ onLogout, onMenuToggle, isSidebarCollapsed }
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { t } = useLanguage();
 
   const profileQuery = useQuery({
     queryKey: ["profile"],
@@ -237,10 +239,10 @@ export default function TopNavbar({ onLogout, onMenuToggle, isSidebarCollapsed }
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ color: "#ffffff", fontSize: "14px", fontWeight: 600, margin: 0 }}>
-                    Profile Settings
+                    {t("Profile Settings")}
                   </p>
                   <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "11px", margin: 0 }}>
-                    General
+                    {t("General")}
                   </p>
                 </div>
               </div>
@@ -292,10 +294,10 @@ export default function TopNavbar({ onLogout, onMenuToggle, isSidebarCollapsed }
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ color: "#ffffff", fontSize: "14px", fontWeight: 600, margin: 0 }}>
-                    Logout
+                    {t("Logout")}
                   </p>
                   <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "11px", margin: 0 }}>
-                    Logout Account
+                    {t("Logout Account")}
                   </p>
                 </div>
               </div>

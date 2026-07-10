@@ -1,5 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
+import { useLanguage } from "../../_components/useLanguage";
 
 const sampleResourcesByCategory: Record<string, Array<{ title: string; desc: string; tagColor: string }>> = {
   math: [
@@ -325,6 +326,7 @@ const sampleResourcesByCategory: Record<string, Array<{ title: string; desc: str
 
 export default function ResourceCategoryPage() {
   const params = useParams();
+  const { t } = useLanguage();
   const categoryParam = String(params?.category || "math").toLowerCase();
 
   const title = categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1);
@@ -343,7 +345,7 @@ export default function ResourceCategoryPage() {
         }
       `}</style>
       <h2 style={{ color: "#ffffff", fontSize: "24px", fontWeight: 700, margin: "0 0 28px" }}>
-        {title} - Equation
+        {t(title)} - {t("Equation")}
       </h2>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -381,7 +383,7 @@ export default function ResourceCategoryPage() {
                 textTransform: "uppercase",
               }}
             >
-              {title}
+              {t(title)}
             </span>
 
             <h3 style={{ color: "#ffffff", fontSize: "16px", fontWeight: 600, margin: "0 0 8px" }}>

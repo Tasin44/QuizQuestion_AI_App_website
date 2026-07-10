@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLanguage } from "../_components/useLanguage";
 
 const categories = [
   { name: "Math", path: "math" },
@@ -17,6 +18,7 @@ const categories = [
 
 export default function ResourcesLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   return (
     <div className="resources-container">
@@ -107,7 +109,7 @@ export default function ResourcesLayout({ children }: { children: React.ReactNod
               href={catPath}
               className={`resources-link ${isActive ? "resources-link-active" : "resources-link-inactive"}`}
             >
-              {cat.name}
+              {t(cat.name)}
             </Link>
           );
         })}

@@ -10,6 +10,7 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
+import { useLanguage } from "../../_components/useLanguage";
 
 interface ChatMessage {
   id: string;
@@ -101,6 +102,7 @@ export default function ChatDetailPage() {
   const router = useRouter();
   const id = String(params?.id || "");
   const { setHasChat } = useChatContext();
+  const { t } = useLanguage();
 
   /* Signal layout to hide footer */
   useEffect(() => {
@@ -385,7 +387,7 @@ export default function ChatDetailPage() {
           {tagInfo.tag}
         </span>
         <span style={{ color: "#ffffff", fontSize: "15px", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }}>
-          {currentItem?.prompt || "Chat details"}
+          {currentItem?.prompt || t("Chat details")}
         </span>
       </div>
 
@@ -409,7 +411,7 @@ export default function ChatDetailPage() {
 
         {error && (
           <p style={{ color: "#ef4444", fontSize: "14px", textAlign: "center" }}>
-            Failed to load chat details.
+            {t("Failed to load chat details.")}
           </p>
         )}
 
@@ -539,7 +541,7 @@ export default function ChatDetailPage() {
                         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)")}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                       >
-                        {copiedMessageId === msg.id ? <Check size={14} /> : <Copy size={14} />} {copiedMessageId === msg.id ? "Copied!" : "Copy"}
+                        {copiedMessageId === msg.id ? <Check size={14} /> : <Copy size={14} />} {copiedMessageId === msg.id ? t("Copied!") : t("Copy")}
                       </button>
                     </div>
                   ) : msg.content}
@@ -750,7 +752,7 @@ export default function ChatDetailPage() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Type your question..."
+              placeholder={t("Type your question...")}
               rows={1}
               className="w-full flex-none order-first bg-transparent border-none focus:ring-0 focus:outline-none text-white resize-none outline-none py-2 text-sm leading-relaxed caret-[#7b68ee] box-border sm:w-auto sm:flex-1 sm:order-none sm:py-2"
               style={{ transition: "height 0.1s ease-out" }}

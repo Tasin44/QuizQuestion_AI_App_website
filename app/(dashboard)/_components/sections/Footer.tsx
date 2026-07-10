@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AiFillTikTok } from "react-icons/ai";
 import { FaFacebook, FaInstagramSquare } from "react-icons/fa";
 import { FaSquareXTwitter } from "react-icons/fa6";
+import { useLanguage } from "@/app/dashboard/_components/useLanguage";
 
 const footerLinks = {
   Company: ["Help Center", "Privacy Policy", "Terms of Service"],
@@ -32,6 +33,7 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const { t } = useLanguage();
   return (
     <footer
       style={{
@@ -94,7 +96,7 @@ export default function Footer() {
               style={{ height: "38px", objectFit: "contain", marginBottom: "14px" }}
             />
             <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "13px", lineHeight: 1.7, margin: 0 }}>
-              Your AI-powered homework companion. Get instant help with any subject, anytime.
+              {t("Your AI-powered homework companion. Get instant help with any subject, anytime.")}
             </p>
           </div>
 
@@ -102,7 +104,7 @@ export default function Footer() {
           {Object.entries(footerLinks).map(([title, links]) => (
             <div key={title}>
               <h4 style={{ color: "#ffffff", fontSize: "14px", fontWeight: 600, margin: "0 0 16px" }}>
-                {title}
+                {t(title)}
               </h4>
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {links.map((link) => {
@@ -124,7 +126,7 @@ export default function Footer() {
                       onMouseEnter={(e) => { e.currentTarget.style.color = "#ffffff"; }}
                       onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.4)"; }}
                     >
-                      {link}
+                      {t(link)}
                     </Link>
                   );
                 })}
@@ -140,7 +142,7 @@ export default function Footer() {
           </p>
           <div>
             <p className="footer-follow-text" style={{ color: "rgba(255,255,255,0.45)", fontSize: "12px", margin: "0 0 10px" }}>
-              Follow us for updates
+              {t("Follow us for updates")}
             </p>
             <div className="footer-social-row">
               {socialLinks.map(({ label, href, icon: Icon }) => (

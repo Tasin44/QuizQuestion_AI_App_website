@@ -1,4 +1,5 @@
 "use client";
+import { useLanguage } from "../useLanguage";
 const plans = [
   { 
     name: "Monthly Plan", 
@@ -45,6 +46,7 @@ const plans = [
   },
 ];
 export default function PricingSection() {
+  const { t } = useLanguage();
   return (
     <section id="pricing" style={{ padding: "80px 20px", textAlign: "center", maxWidth: "1100px", margin: "0 auto" }}>
       <style>{`
@@ -65,14 +67,14 @@ export default function PricingSection() {
           }
         }
       `}</style>
-      <h2 style={{ color: "#ffffff", fontSize: "clamp(22px, 5vw, 34px)", fontWeight: 700, margin: "0 0 50px" }}>Start for free. Upgrade anytime.</h2>
+      <h2 style={{ color: "#ffffff", fontSize: "clamp(22px, 5vw, 34px)", fontWeight: 700, margin: "0 0 50px" }}>{t("Start for free. Upgrade anytime.")}</h2>
       <div className="pricing-grid">
         {plans.map((p) => (
           <div key={p.name} style={{ backgroundColor: "#111118", borderRadius: "16px", border: p.popular ? "1px solid rgba(79,70,229,0.4)" : "1px solid rgba(255,255,255,0.06)", padding: "36px 24px", textAlign: "left", position: "relative", transition: "all 0.3s ease" }}
             onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
-            {p.popular && <div style={{ position: "absolute", top: "-12px", right: "24px", backgroundColor: "#4F46E5", color: "#fff", fontSize: "11px", fontWeight: 600, padding: "4px 14px", borderRadius: "20px" }}>Popular</div>}
-            <h3 style={{ color: "rgba(255,255,255,0.5)", fontSize: "15px", fontWeight: 600, margin: "0 0 6px" }}>{p.name}</h3>
+            {p.popular && <div style={{ position: "absolute", top: "-12px", right: "24px", backgroundColor: "#4F46E5", color: "#fff", fontSize: "11px", fontWeight: 600, padding: "4px 14px", borderRadius: "20px" }}>{t("Popular")}</div>}
+            <h3 style={{ color: "rgba(255,255,255,0.5)", fontSize: "15px", fontWeight: 600, margin: "0 0 6px" }}>{t(p.name)}</h3>
             <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "28px" }}>
               <span style={{ color: "#ffffff", fontSize: "clamp(30px, 6vw, 40px)", fontWeight: 700 }}>{p.price}</span>
               <span style={{ color: "rgba(255,255,255,0.35)", fontSize: "14px" }}>{p.period}</span>
@@ -85,11 +87,11 @@ export default function PricingSection() {
                   ) : (
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                   )}
-                  <span style={{ color: f.ok ? "rgba(255,255,255,0.65)" : "rgba(255,255,255,0.25)", fontSize: "13px" }}>{f.text}</span>
+                  <span style={{ color: f.ok ? "rgba(255,255,255,0.65)" : "rgba(255,255,255,0.25)", fontSize: "13px" }}>{t(f.text)}</span>
                 </div>
               ))}
             </div>
-            <button style={{ width: "100%", padding: "14px", borderRadius: "10px", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s ease", backgroundColor: p.filled ? "#4F46E5" : "transparent", border: p.filled ? "none" : "1px solid rgba(255,255,255,0.15)", color: p.filled ? "#ffffff" : "rgba(255,255,255,0.6)" }}>{p.btn}</button>
+            <button style={{ width: "100%", padding: "14px", borderRadius: "10px", fontSize: "14px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s ease", backgroundColor: p.filled ? "#4F46E5" : "transparent", border: p.filled ? "none" : "1px solid rgba(255,255,255,0.15)", color: p.filled ? "#ffffff" : "rgba(255,255,255,0.6)" }}>{t(p.btn)}</button>
           </div>
         ))}
       </div>

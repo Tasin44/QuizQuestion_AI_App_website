@@ -1,6 +1,8 @@
 "use client";
+import { useLanguage } from "../_components/useLanguage";
 
 export default function AppPage() {
+  const { t } = useLanguage();
   return (
     <div style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
       <style>{`
@@ -110,7 +112,7 @@ export default function AppPage() {
                 textTransform: "uppercase",
               }}
             >
-              Download Now!!
+              {t("Download Now!!")}
             </p>
             <h1
               style={{
@@ -121,9 +123,7 @@ export default function AppPage() {
                 margin: "0 0 28px",
               }}
             >
-              Quiz Question AI
-              <br />
-              Is Available for All Devices
+              {t("Quiz Question AI Is Available for All Devices")}
             </h1>
 
             <p
@@ -136,7 +136,7 @@ export default function AppPage() {
                 margin: "0 0 14px",
               }}
             >
-              DOWNLOAD APP
+              {t("DOWNLOAD APP")}
             </p>
 
             <div className="store-buttons-container">
@@ -164,8 +164,8 @@ export default function AppPage() {
                   <path d="M6.05 2.66L16.81 8.88L14.54 11.15L6.05 2.66Z" fill="#34A853" />
                 </svg>
                 <div style={{ textAlign: "left" }}>
-                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "8px", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>GET IT ON</p>
-                  <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>Google Play</p>
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "8px", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>{t("GET IT ON")}</p>
+                  <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>{t("Google Play")}</p>
                 </div>
               </a>
 
@@ -191,8 +191,8 @@ export default function AppPage() {
                   <path d="M12.17 3.54c.77-.94 1.29-2.24 1.15-3.54-1.11.04-2.45.74-3.25 1.67-.71.83-1.34 2.15-1.17 3.42 1.24.1 2.5-.63 3.27-1.55z" />
                 </svg>
                 <div style={{ textAlign: "left" }}>
-                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "8px", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>Download on the</p>
-                  <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>App Store</p>
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "8px", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>{t("Download on the")}</p>
+                  <p style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, margin: 0 }}>{t("App Store")}</p>
                 </div>
               </a>
             </div>

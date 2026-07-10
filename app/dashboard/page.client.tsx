@@ -17,6 +17,7 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
+import { useLanguage } from "./_components/useLanguage";
 
 /* ───── Types ───── */
 interface ChatMessage {
@@ -39,11 +40,11 @@ const MODEL_LABELS: Record<string, string> = {
 /* ───── Subject pills ───── */
 const subjectPills = ["Math", "Physics", "Chemistry", "Biology", "Statistics"];
 
-function getGreeting() {
+function getGreeting(t: (key: string) => string) {
   const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
+  if (h < 12) return t("Good morning");
+  if (h < 18) return t("Good afternoon");
+  return t("Good evening");
 }
 
 function TypingIndicator() {
@@ -114,6 +115,7 @@ const markdownComponents = {
 
 export default function ClientDashboard() {
   const { setHasChat } = useChatContext();
+  const { t } = useLanguage();
   const [message, setMessage] = useState("");
   const [model, setModel] = useState("auto");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -323,10 +325,10 @@ export default function ClientDashboard() {
       >
         {!hasChat && (
           <>
-            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "15px", margin: "0 0 6px" }}>{getGreeting()} 👋</p>
-            <h1 style={{ color: "#ffffff", fontSize: "36px", fontWeight: 700, margin: "0 0 4px", lineHeight: 1.25 }}>Your AI Homework Helper</h1>
-            <h1 style={{ color: "#ffffff", fontSize: "36px", fontWeight: 700, margin: "0 0 32px", lineHeight: 1.25 }}>Ask anything.</h1>
-            <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "14px", margin: "0 0 24px", maxWidth: "540px", lineHeight: 1.6 }}>Ask a question, upload an image, or open the calculator. Everything stays safe and protected.</p>
+            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "15px", margin: "0 0 6px" }}>{getGreeting(t)} 👋</p>
+            <h1 style={{ color: "#ffffff", fontSize: "36px", fontWeight: 700, margin: "0 0 4px", lineHeight: 1.25 }}>{t("Your AI Homework Helper")}</h1>
+            <h1 style={{ color: "#ffffff", fontSize: "36px", fontWeight: 700, margin: "0 0 32px", lineHeight: 1.25 }}>{t("Ask anything.")}</h1>
+            <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "14px", margin: "0 0 24px", maxWidth: "540px", lineHeight: 1.6 }}>{t("Ask a question, upload an image, or open the calculator. Everything stays safe and protected.")}</p>
           </>
         )}
 
@@ -361,7 +363,7 @@ export default function ClientDashboard() {
                         onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)")}
                         onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                       >
-                        {copiedMessageId === msg.id ? <Check size={14} /> : <Copy size={14} />} {copiedMessageId === msg.id ? "Copied!" : "Copy"}
+                        {copiedMessageId === msg.id ? <Check size={14} /> : <Copy size={14} />} {copiedMessageId === msg.id ? t("Copied!") : t("Copy")}
                       </button>
                     </div>
                   ) : (
@@ -454,7 +456,7 @@ export default function ClientDashboard() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask a question..."
+              placeholder={t("Ask a question...")}
               className="w-full flex-none order-first bg-transparent border-none focus:ring-0 focus:outline-none text-white resize-none outline-none py-2 text-sm leading-relaxed caret-[#7b68ee] box-border sm:w-auto sm:flex-1 sm:order-none sm:py-2"
               rows={1}
               style={{ transition: "height 0.1s ease-out" }}

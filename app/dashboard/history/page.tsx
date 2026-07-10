@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { getChatHistory } from "@/app/(auth)/_lib/api";
+import { useLanguage } from "../_components/useLanguage";
 
 function formatDate(dateStr: string) {
   try {
@@ -34,6 +35,7 @@ function getTagDetails(prompt: string) {
 }
 
 export default function HistoryPage() {
+  const { t } = useLanguage();
   const { data, isLoading, error } = useQuery({
     queryKey: ["chatHistory"],
     queryFn: getChatHistory,
@@ -45,7 +47,7 @@ export default function HistoryPage() {
     <div style={{ padding: "32px clamp(16px, 4vw, 40px)", maxWidth: "800px", margin: "0" }}>
       {/* Header */}
       <h1 style={{ color: "#ffffff", fontSize: "clamp(20px, 4vw, 26px)", fontWeight: 700, margin: "0 0 28px" }}>
-        Chat History
+        {t("Chat History")}
       </h1>
 
       {isLoading && (
@@ -65,13 +67,13 @@ export default function HistoryPage() {
 
       {error && (
         <p style={{ color: "#ef4444", fontSize: "14px", textAlign: "center" }}>
-          Failed to load chat history. Please make sure you are logged in.
+          {t("Failed to load chat history. Please make sure you are logged in.")}
         </p>
       )}
 
       {!isLoading && !error && historyItems.length === 0 && (
         <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "14px", textAlign: "center", marginTop: "40px" }}>
-          No chat history found. Start a new session on the dashboard!
+          {t("No chat history found. Start a new session on the dashboard!")}
         </p>
       )}
 
@@ -116,7 +118,7 @@ export default function HistoryPage() {
                       fontWeight: 600,
                     }}
                   >
-                    {tag}
+                    {t(tag)}
                   </span>
                   {/* Date */}
                   <span style={{ color: "rgba(255,255,255,0.35)", fontSize: "12px" }}>

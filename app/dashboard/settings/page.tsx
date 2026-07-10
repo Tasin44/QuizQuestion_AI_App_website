@@ -18,6 +18,7 @@ import {
 } from "@/app/(auth)/_lib/api";
 import { getAccessToken } from "@/app/(auth)/_lib/authStorage";
 import ModelSelector from "../_components/ModelSelector";
+import { useLanguage } from "../_components/useLanguage";
 import { 
   Sparkles, 
   Calculator, 
@@ -44,7 +45,8 @@ import {
   Mail,
   ShieldCheck,
   Shield,
-  Info
+  Info,
+  Globe
 } from "lucide-react";
 
 const aiModels = [
@@ -129,11 +131,13 @@ function Toggle({ active, onClick }: ToggleProps) {
 }
 
 export default function SettingsPage() {
+  const { t } = useLanguage();
   const [selectedModel, setSelectedModel] = useState("auto");
   const [askModel, setAskModel] = useState("auto");
   const [responseStyle, setResponseStyle] = useState("balanced");
   const [difficulty, setDifficulty] = useState(50);
   const [selectedSubjects, setSelectedSubjects] = useState(["mathematics", "physics"]);
+  const [language, setLanguage] = useState("auto");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -156,6 +160,9 @@ export default function SettingsPage() {
             setSelectedSubjects(JSON.parse(savedSubjects));
           } catch {}
         }
+
+        const savedLang = localStorage.getItem("preferred_language");
+        if (savedLang) setLanguage(savedLang);
       }, 0);
       return () => clearTimeout(timer);
     }
@@ -167,6 +174,8 @@ export default function SettingsPage() {
       localStorage.setItem("response_style", responseStyle);
       localStorage.setItem("difficulty_level", String(difficulty));
       localStorage.setItem("selected_subjects", JSON.stringify(selectedSubjects));
+      localStorage.setItem("preferred_language", language);
+      window.dispatchEvent(new Event("languageChanged"));
       toast.success("Preferences saved successfully!");
     }
   };
@@ -288,12 +297,15 @@ export default function SettingsPage() {
       localStorage.removeItem("response_style");
       localStorage.removeItem("difficulty_level");
       localStorage.removeItem("selected_subjects");
+      localStorage.removeItem("preferred_language");
       
       setSelectedModel("auto");
       setAskModel("auto");
       setResponseStyle("balanced");
       setDifficulty(50);
       setSelectedSubjects(["mathematics", "physics"]);
+      setLanguage("auto");
+      window.dispatchEvent(new Event("languageChanged"));
       
       toast.success("Cache & local preferences cleared successfully!");
     }
@@ -486,7 +498,7 @@ export default function SettingsPage() {
             {/* Profile Settings */}
             <div style={cardStyle}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "18px" }}>
-                <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: 0 }}>Profile Settings</h2>
+                <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: 0 }}>{t("Profile Settings")}</h2>
                 <button
                   onClick={handleToggleEditProfile}
                   style={{
@@ -607,7 +619,7 @@ export default function SettingsPage() {
 
             {/* Change Password */}
             <div style={cardStyle}>
-              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 18px" }}>Change Password</h2>
+              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 18px" }}>{t("Change Password") || "Change Password"}</h2>
               <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                 {[
                   { label: "Current Password", placeholder: "Password", value: showCurrentPassword, setter: setShowCurrentPassword },
@@ -641,7 +653,7 @@ export default function SettingsPage() {
 
             {/* Ask AI */}
             <div style={cardStyle}>
-              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 14px" }}>Ask AI</h2>
+              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 14px" }}>{t("Ask AI") || "Ask AI"}</h2>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
                 <ModelSelector
                   size="sm"
@@ -659,9 +671,58 @@ export default function SettingsPage() {
               {/* Ask response hidden on settings page */}
             </div>
 
+            {/* Language Preference */}
+            <div style={cardStyle}>
+              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 6px" }}>{t("Language Preference") || "Language Preference"}</h2>
+              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px", margin: "0 0 16px" }}>Select a default language for study assistant</p>
+              
+              <div style={{ 
+                backgroundColor: "rgba(255,255,255,0.02)", 
+                border: "1px solid rgba(255,255,255,0.05)", 
+                borderRadius: "12px",
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column"
+              }}>
+                {[
+                  { id: "auto", name: "Auto Detect", desc: "System Default (English)" },
+                  { id: "en", name: "English", desc: "English (US)" },
+                  { id: "ar", name: "عربي", desc: "(Arabic)" },
+                  { id: "es", name: "Spanish", desc: "Español (Spanish)" },
+                  { id: "fr", name: "French", desc: "Français (French)" },
+                ].map((lang) => {
+                  const isActive = lang.id === language;
+                  return (
+                    <div
+                      key={lang.id}
+                      onClick={() => setLanguage(lang.id)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: "14px",
+                        padding: "14px 16px", cursor: "pointer", transition: "all 0.2s ease",
+                        backgroundColor: isActive ? "rgba(255,255,255,0.06)" : "transparent",
+                        borderBottom: "1px solid rgba(255,255,255,0.03)",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive) e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.03)";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                    >
+                      <Globe size={18} style={{ color: isActive ? "#a855f7" : "rgba(255,255,255,0.4)", flexShrink: 0 }} />
+                      <div>
+                        <div style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>{lang.name}</div>
+                        <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px", marginTop: "2px" }}>{lang.desc}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* AI Personalization */}
             <div style={cardStyle}>
-              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 18px" }}>AI Personalization</h2>
+              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 18px" }}>{t("AI Personalization") || "AI Personalization"}</h2>
 
               {/* Models */}
               <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
@@ -831,7 +892,7 @@ export default function SettingsPage() {
 
             {/* Parental Control */}
             <div style={cardStyle}>
-              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 16px" }}>Parental Control</h2>
+              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 16px" }}>{t("Parental Control") || "Parental Control"}</h2>
               <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "16px" }}>
                 {[
                   { id: "parent", title: "Parent", desc: "Add managing abilities as parent" },
@@ -908,7 +969,7 @@ export default function SettingsPage() {
 
             {/* Explore Your Data */}
             <div style={cardStyle}>
-              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 16px" }}>Data Control</h2>
+              <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: "0 0 16px" }}>{t("Data Control") || "Data Control"}</h2>
               
               <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
                 {/* Export Data Button */}
@@ -1020,7 +1081,7 @@ export default function SettingsPage() {
                 )}
                 <div>
                   <h2 style={{ color: "#fff", fontSize: "16px", fontWeight: 700, margin: 0 }}>
-                    {twoFactorStep === "method" ? "Choose Your Method" : "Two-Factor Auth"}
+                    {twoFactorStep === "method" ? "Choose Your Method" : (t("Two-Factor Auth") || "Two-Factor Auth")}
                   </h2>
                   <p style={{ color: "rgba(255,255,255,0.35)", fontSize: "11px", margin: "2px 0 0" }}>
                     {twoFactorStep === "method" ? "Select a verification method" : "Add an extra layer of security"}

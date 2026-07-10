@@ -9,6 +9,7 @@ import {
   Settings, 
   History 
 } from "lucide-react";
+import { useLanguage } from "./useLanguage";
 
 interface SidebarProps {
   onLogout: () => void;
@@ -51,6 +52,7 @@ const navItems = [
 
 export default function Sidebar({ onLogout, onNavClick, collapsed = false }: SidebarProps) {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   return (
     <aside
@@ -102,7 +104,7 @@ export default function Sidebar({ onLogout, onNavClick, collapsed = false }: Sid
               key={item.href}
               href={item.href}
               onClick={onNavClick}
-              title={collapsed ? item.label : undefined}
+              title={collapsed ? t(item.label) : undefined}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -131,7 +133,7 @@ export default function Sidebar({ onLogout, onNavClick, collapsed = false }: Sid
               }}
             >
               {item.icon}
-              {!collapsed && <span>{item.label}</span>}
+              {!collapsed && <span>{t(item.label)}</span>}
             </Link>
           );
         })}
@@ -140,7 +142,7 @@ export default function Sidebar({ onLogout, onNavClick, collapsed = false }: Sid
       {/* Logout Button */}
       <button
         onClick={onLogout}
-        title={collapsed ? "Logout" : undefined}
+        title={collapsed ? t("Logout") : undefined}
         style={{
           display: "flex",
           alignItems: "center",
@@ -167,7 +169,7 @@ export default function Sidebar({ onLogout, onNavClick, collapsed = false }: Sid
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" />
         </svg>
-        {!collapsed && <span>Logout</span>}
+        {!collapsed && <span>{t("Logout")}</span>}
       </button>
     </aside>
   );
